@@ -17,7 +17,7 @@ with open(os.path.expanduser("~/.env")) as f:
 client = genai.Client(api_key=api_key)
 
 # Load artwork image
-im = Image.open("Artwork.jpeg")
+im = Image.open("images/marsh/marsh.jpeg")
 w, h = im.size
 print(f"Artwork size: {w} x {h}")
 
@@ -86,7 +86,7 @@ Nor any drop to drink"""
 
 print("\nGenerating poem-inspired images...")
 for keyword, poem_text in poems.items():
-    outpath = f"outputs/poem_{keyword}.png"
+    outpath = f"images/marsh/marsh_{keyword}.png"
     prompt = f"Create a painterly artistic illustration inspired by this poem. Do not include any text in the produced image.\n{poem_text}"
     print(f"  Generating image for '{keyword}'...")
     try:
@@ -110,4 +110,4 @@ for keyword, poem_text in poems.items():
 
 print("\nDone. The mask image is used directly as a pixel-lookup table in index.html.")
 print("Color mapping: Black=Sky, Green=Vegetation, Red=Boardwalk, Blue=Water")
-print("Poem images saved to outputs/poem_*.png")
+print("Poem images saved to images/marsh/marsh_*.png")
