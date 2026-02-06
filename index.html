@@ -53,6 +53,26 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   }
   .popup.visible { opacity: 1; }
+  .popup.pinned { pointer-events: auto; }
+  .popup-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.3rem;
+    color: #999;
+    cursor: pointer;
+    display: none;
+    line-height: 1;
+  }
+  .popup-close:hover { color: #fff; }
+  .popup.pinned .popup-close { display: block; }
+  .popup .poem-title a {
+    color: #c4a35a;
+    text-decoration: none;
+  }
+  .popup .poem-title a:hover {
+    text-decoration: underline;
+  }
   .popup .poem-title {
     font-size: 1rem;
     font-weight: 600;
@@ -154,6 +174,7 @@
     <img src="" id="artwork" alt="">
   </div>
   <div class="popup" id="popup">
+    <span class="popup-close" id="popup-close">&times;</span>
     <div class="poem-title" id="popup-title"></div>
     <div class="poem-poet" id="popup-poet"></div>
     <img class="poem-image" id="popup-image" alt="" style="display:none;">
@@ -176,6 +197,7 @@ const galleryItems = [
       "Boardwalk": {
         title: "Boardwalk",
         poet: "Herbert Morris",
+        url: "https://newcriterion.com/article/boardwalk/",
         image: "images/marsh/marsh_boardwalk.png",
         keyword: "boardwalk",
         text: "My breath, turned smoke, is rising on the air.\nIn the background, not completely in focus,\nlies the resort itself (the sea unseen),\na mise-en-scène of small shops, baths, hotels,\nlining the boardwalk; a few scattered figures,\nfading to haze, to blur, loom in the distance,\nearly walkers like us, although it seems\nwe have the boardwalk largely to ourselves."
@@ -183,6 +205,7 @@ const galleryItems = [
       "Salt Marsh Vegetation": {
         title: "Song of Myself",
         poet: "Walt Whitman",
+        url: "https://www.poetryfoundation.org/poems/45477/song-of-myself-1892-version",
         image: "images/marsh/marsh_marsh.png",
         keyword: "marsh",
         text: "Where band-neck'd partridges roost in a ring on the ground with their heads out,\nWhere burial coaches enter the arch'd gates of a cemetery,\nWhere winter wolves bark amid wastes of snow and icicled trees,\nWhere the yellow-crown'd heron comes to the edge of the marsh at night and feeds upon small crabs,\nWhere the splash of swimmers and divers cools the warm noon"
@@ -190,6 +213,7 @@ const galleryItems = [
       "Sky": {
         title: "I Dwell in Possibility",
         poet: "Emily Dickinson",
+        url: "https://www.poetryfoundation.org/poems/52197/i-dwell-in-possibility-466",
         image: "images/marsh/marsh_sky.png",
         keyword: "Sky",
         text: "Of Chambers as the Cedars –\nImpregnable of eye –\nAnd for an everlasting Roof\nThe Gambrels of the Sky"
@@ -197,6 +221,7 @@ const galleryItems = [
       "Tidal Creek Water": {
         title: "The Rime of the Ancient Mariner",
         poet: "Samuel Taylor Coleridge",
+        url: "https://www.poetryfoundation.org/poems/43997/the-rime-of-the-ancient-mariner-text-of-1834",
         image: "images/marsh/marsh_water.png",
         keyword: "Water",
         text: "Water, water, every where,\nAnd all the boards did shrink;\nWater, water, every where,\nNor any drop to drink"
@@ -219,6 +244,7 @@ const galleryItems = [
       "Sky": {
         title: "Ode to the West Wind",
         poet: "Percy Bysshe Shelley",
+        url: "https://www.poetryfoundation.org/poems/45134/ode-to-the-west-wind",
         image: "images/lourmarin/lourmarin_sky.png",
         keyword: "sky",
         text: "Thou on whose stream, mid the steep sky's commotion,\nLoose clouds like earth's decaying leaves are shed,\nShook from the tangled boughs of Heaven and Ocean,"
@@ -226,6 +252,7 @@ const galleryItems = [
       "Trees": {
         title: "Trees",
         poet: "Joyce Kilmer",
+        url: "https://www.poetryfoundation.org/poetrymagazine/poems/12744/trees",
         image: "images/lourmarin/lourmarin_trees.png",
         keyword: "tree",
         text: "Poems are made by fools like me,\nBut only God can make a tree."
@@ -233,20 +260,23 @@ const galleryItems = [
       "Cliffs": {
         title: "The Prelude",
         poet: "William Wordsworth",
+        url: "https://www.poetryfoundation.org/poems/45542/the-prelude-book-1-childhood-and-school-time",
         image: "images/lourmarin/lourmarin_cliffs.png",
         keyword: "cliff",
         text: "a huge Cliff,\nAs if with voluntary power instinct,\nUpreared its head. I struck, and struck again,\nAnd, growing still in stature, the huge cliff\nRose up between me and the stars, and still\nWith measured motion, like a living thing,\nStrode after me."
       },
       "Meadow": {
-        title: "The Day of the Festival",
-        poet: "Victor Hugo",
+        title: "A Kind of Meadow",
+        poet: "Carl Phillips",
+        url: "https://www.poetryfoundation.org/poems/47858/a-kind-of-meadow",
         image: "images/lourmarin/lourmarin_meadow.png",
-        keyword: "meadows",
-        text: "In the soft light couples pass,\nFamilies wander, all serene.\nOn the horizon, over there,\nIs Saint Louis' dusty keep;\nHigh above the joyful affair,\nThe sun dazzles; meadows sleep."
+        keyword: "meadow",
+        text: "Trespass: Halt. Who goes there?\nA kind of meadow, where it ends\nbegin trees, from whose twinning\n\nof late light and the already underway\ndarkness"
       },
       "River": {
         title: "The Sleeper in the Valley",
         poet: "Arthur Rimbaud",
+        url: "https://allpoetry.com/the-sleeper-in-the-valley",
         image: "images/lourmarin/lourmarin_river.png",
         keyword: "river",
         text: "It is a green hollow where a river sings\nMadly catching on the grasses\nSilver rags; where the sun shines from the proud mountain:\nIt is a small valley which bubbles over with rays."
@@ -254,6 +284,7 @@ const galleryItems = [
       "Figures": {
         title: "Le Voyage",
         poet: "Charles Baudelaire",
+        url: "https://fleursdumal.org/poem/231",
         image: "images/lourmarin/lourmarin_travelers.png",
         keyword: "travelers",
         text: "But the true travelers are those who go\nOnly to get away: hearts like balloons,\nThey never turn aside from their fatality\nAnd without knowing why they always say: \"Let's go!\""
@@ -297,6 +328,8 @@ const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 let activePoemData = null;
 let activeGetLabel = null;
 let currentLabel = null;
+let pinned = false;
+let pinnedData = null;
 
 // --- Build gallery thumbnails ---
 galleryItems.forEach(item => {
@@ -343,6 +376,9 @@ backBtn.addEventListener('click', () => {
   viewerScreen.classList.add('hidden');
   galleryScreen.classList.remove('hidden');
   popup.classList.remove('visible');
+  popup.classList.remove('pinned');
+  pinned = false;
+  pinnedData = null;
   currentLabel = null;
 });
 
@@ -362,6 +398,7 @@ function positionPopup(clientX, clientY) {
 // --- Hover interaction ---
 artworkEl.addEventListener('mousemove', (e) => {
   if (!activePoemData || !activeGetLabel) return;
+  if (pinned) return;
 
   const rect = artworkEl.getBoundingClientRect();
   const relX = (e.clientX - rect.left) / rect.width;
@@ -394,6 +431,36 @@ artworkEl.addEventListener('mousemove', (e) => {
 });
 
 artworkEl.addEventListener('mouseleave', () => {
+  if (pinned) return;
+  popup.classList.remove('visible');
+  currentLabel = null;
+});
+
+// --- Click to pin popup ---
+artworkEl.addEventListener('click', () => {
+  if (pinned || !popup.classList.contains('visible') || !currentLabel) return;
+  const data = activePoemData[currentLabel];
+  if (!data) return;
+  pinned = true;
+  pinnedData = data;
+  popup.classList.add('pinned');
+  // Replace title text with hyperlink using DOM methods
+  if (data.url) {
+    popupTitle.textContent = '';
+    const link = document.createElement('a');
+    link.href = data.url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = data.title;
+    popupTitle.appendChild(link);
+  }
+});
+
+// --- Close button unpins popup ---
+document.getElementById('popup-close').addEventListener('click', () => {
+  pinned = false;
+  pinnedData = null;
+  popup.classList.remove('pinned');
   popup.classList.remove('visible');
   currentLabel = null;
 });
