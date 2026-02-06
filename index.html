@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Looking — Salt Marsh Boardwalk</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+    color: #c4a35a;
+  }
+  .subtitle {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 20px;
+  }
+  .viewer {
+    position: relative;
+    display: inline-block;
+    cursor: crosshair;
+  }
+  .viewer img {
+    display: block;
+    max-width: 95vw;
+    max-height: 80vh;
+  }
+  .popup {
+    position: fixed;
+    background: rgba(26, 26, 46, 0.97);
+    border: 1px solid #c4a35a;
+    border-radius: 10px;
+    padding: 16px;
+    color: #e0e0e0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 100;
+    width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .popup.visible { opacity: 1; }
+  .popup .poem-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #c4a35a;
+    margin-bottom: 2px;
+  }
+  .popup .poem-poet {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .popup .poem-image {
+    width: 100%;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .popup .poem-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #d0d0d0;
+    white-space: pre-line;
+  }
+  .credits {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<h1>DEEP LOOKING</h1>
+<p class="subtitle">Hover over regions to explore — Salt Marsh Boardwalk, Amelia Island</p>
+
+<div class="viewer" id="viewer">
+  <img src="artwork.jpeg" id="artwork" alt="Salt Marsh Boardwalk">
+</div>
+
+<div class="popup" id="popup">
+  <div class="poem-title" id="popup-title"></div>
+  <div class="poem-poet" id="popup-poet"></div>
+  <img class="poem-image" id="popup-image" alt="" style="display:none;">
+  <div class="poem-text" id="popup-text"></div>
+</div>
+
+<p class="credits">Paul Fishwick and Claude Code — Nano Banana Pro segmentation</p>
+
+<!-- Hidden canvas for reading segmentation mask pixels -->
+<canvas id="maskCanvas" style="display:none;"></canvas>
+
+<script>
+const artwork = document.getElementById('artwork');
+const popup = document.getElementById('popup');
+const popupTitle = document.getElementById('popup-title');
+const popupPoet = document.getElementById('popup-poet');
+const popupImage = document.getElementById('popup-image');
+const popupText = document.getElementById('popup-text');
+const maskCanvas = document.getElementById('maskCanvas');
+const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+
+// Poem data keyed by region label
+const poemData = {
+  "Boardwalk": {
+    title: "Boardwalk",
+    poet: "Herbert Morris",
+    image: "outputs/poem_boardwalk.png",
+    keyword: "boardwalk",
+    text: "My breath, turned smoke, is rising on the air.\nIn the background, not completely in focus,\nlies the resort itself (the sea unseen),\na mise-en-scène of small shops, baths, hotels,\nlining the boardwalk; a few scattered figures,\nfading to haze, to blur, loom in the distance,\nearly walkers like us, although it seems\nwe have the boardwalk largely to ourselves."
+  },
+  "Salt Marsh Vegetation": {
+    title: "Song of Myself",
+    poet: "Walt Whitman",
+    image: "outputs/poem_marsh.png",
+    keyword: "marsh",
+    text: "Where band-neck'd partridges roost in a ring on the ground with their heads out,\nWhere burial coaches enter the arch'd gates of a cemetery,\nWhere winter wolves bark amid wastes of snow and icicled trees,\nWhere the yellow-crown'd heron comes to the edge of the marsh at night and feeds upon small crabs,\nWhere the splash of swimmers and divers cools the warm noon"
+  },
+  "Sky": {
+    title: "I Dwell in Possibility",
+    poet: "Emily Dickinson",
+    image: "outputs/poem_sky.png",
+    keyword: "Sky",
+    text: "Of Chambers as the Cedars –\nImpregnable of eye –\nAnd for an everlasting Roof\nThe Gambrels of the Sky"
+  },
+  "Tidal Creek Water": {
+    title: "The Rime of the Ancient Mariner",
+    poet: "Samuel Taylor Coleridge",
+    image: "outputs/poem_water.png",
+    keyword: "Water",
+    text: "Water, water, every where,\nAnd all the boards did shrink;\nWater, water, every where,\nNor any drop to drink"
+  }
+};
+
+// Color-to-label mapping based on Nano Banana Pro's chosen palette
+// Sky≈(121,168,224), Vegetation≈(77,164,86), Boardwalk≈(136,80,33), Water≈(50,120,205)
+function getLabel(r, g, b) {
+  // Boardwalk: brown — R highest, B low
+  if (r > 110 && g < 110 && b < 60) return "Boardwalk";
+  // Vegetation: green — G highest, B low
+  if (g > 130 && b < 120 && r < 110) return "Salt Marsh Vegetation";
+  // Sky: light blue — R>100, B high
+  if (r > 90 && b > 180 && g > 140) return "Sky";
+  // Water: darker blue — R low, B high
+  if (r < 80 && b > 150) return "Tidal Creek Water";
+  return null;
+}
+
+// Load the segmentation mask into the hidden canvas
+const maskImg = new Image();
+maskImg.onload = function() {
+  maskCanvas.width = maskImg.width;
+  maskCanvas.height = maskImg.height;
+  maskCtx.drawImage(maskImg, 0, 0);
+  console.log(`Mask loaded: ${maskImg.width} x ${maskImg.height}`);
+};
+maskImg.src = 'outputs/segmentation_mask.png';
+
+// Position popup so it stays within the viewport
+function positionPopup(clientX, clientY) {
+  const pw = 320;
+  const ph = popup.offsetHeight || 400;
+  let left = clientX + 20;
+  let top = clientY - 20;
+  if (left + pw > window.innerWidth - 10) left = clientX - pw - 20;
+  if (top + ph > window.innerHeight - 10) top = window.innerHeight - ph - 10;
+  if (top < 10) top = 10;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
+
+let currentLabel = null;
+
+artwork.addEventListener('mousemove', (e) => {
+  const rect = artwork.getBoundingClientRect();
+  const relX = (e.clientX - rect.left) / rect.width;
+  const relY = (e.clientY - rect.top) / rect.height;
+  const maskX = Math.floor(relX * maskCanvas.width);
+  const maskY = Math.floor(relY * maskCanvas.height);
+
+  const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
+  const label = getLabel(pixel[0], pixel[1], pixel[2]);
+
+  if (label && poemData[label]) {
+    if (label !== currentLabel) {
+      const data = poemData[label];
+      popupTitle.textContent = data.title;
+      popupPoet.textContent = data.poet;
+      popupImage.src = data.image;
+      popupImage.alt = data.title;
+      popupImage.style.display = 'block';
+      const escaped = data.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const highlighted = escaped.replace(new RegExp('(' + data.keyword + ')', 'gi'), '<span style="color:#e8913a;font-weight:600">$1</span>');
+      popupText.innerHTML = highlighted;
+      currentLabel = label;
+    }
+    popup.classList.add('visible');
+    positionPopup(e.clientX, e.clientY);
+  } else {
+    popup.classList.remove('visible');
+    currentLabel = null;
+  }
+});
+
+artwork.addEventListener('mouseleave', () => {
+  popup.classList.remove('visible');
+  currentLabel = null;
+});
+</script>
+</body>
+</html>
