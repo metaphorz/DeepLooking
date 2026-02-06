@@ -17,7 +17,7 @@ with open(os.path.expanduser("~/.env")) as f:
 client = genai.Client(api_key=api_key)
 
 # Load artwork image
-im = Image.open("artwork.jpeg")
+im = Image.open("Artwork.jpeg")
 w, h = im.size
 print(f"Artwork size: {w} x {h}")
 
