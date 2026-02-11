@@ -4,69 +4,329 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
 
 \definecolor{gold}{HTML}{C4A35A}
+\definecolor{darkbg}{HTML}{1A1A2E}
 
-\title{\textcolor{gold}{Poetry Deep Looking}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=gold!80!black,
+  urlcolor=gold!80!black
+}
+
+\title{\textcolor{gold}{\Huge DEEP LOOKING}\\[6pt]
+\large A User Guide}
 \author{Paul Fishwick and Claude Code}
 \date{February 2026}
 
 \begin{document}
 \maketitle
 
-\section{Overview}
+\tableofcontents
+\newpage
 
-Poetry Deep Looking is an interactive web application that pairs visual art with poetry. Users explore paintings by hovering over segmented regions, each of which reveals a contextually matched poem excerpt. The application uses AI-generated segmentation masks (via Google Gemini Pro) to map artwork regions to poems.
+\section{Introduction}
 
-\section{Gallery}
+Deep Looking is an interactive web application for exploring visual art through discipline-specific \emph{lenses}. Rather than viewing an artwork passively, visitors click on regions of a painting to discover interpretive content drawn from poetry, mathematics, computer science, geology, botany, material science, physics, language, and cinematography. Multiple popups can be open simultaneously, allowing side-by-side comparison of different regions and lenses.
 
-The application opens with a gallery of artwork thumbnails. Each card shows the painting and its attribution. Clicking a card opens the interactive viewer.
+The application runs entirely in the browser as a single \texttt{index.html} file with no server-side code, making it compatible with GitHub Pages. All content is loaded dynamically from JSON manifests and Markdown files organized in a structured directory hierarchy.
+
+\section{Getting Started}
+
+\subsection{Opening the Application}
+
+Open \texttt{index.html} in a web browser, or serve it via a local HTTP server:
+
+\begin{Verbatim}[fontsize=\small]
+python3 -m http.server 8765
+\end{Verbatim}
+
+Then navigate to \texttt{http://localhost:8765/index.html}.
+
+\subsection{The Gallery}
+
+The application opens with a gallery of artwork thumbnails, as shown in Figure~\ref{fig:gallery}. Each card displays the painting, its title, the artist, and the hosting gallery or museum (linked to the institution's website). Click any card to open that artwork in the interactive viewer.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.85\textwidth]{gallery.png}
-\caption{Gallery screen showing two artworks: \emph{Marsh Boardwalk North} by Stan Cottle and \emph{The Mouth of the Lourmarin River} by Paul Camille Guigou (1867).}
+\includegraphics[width=0.9\textwidth]{gallery.png}
+\caption{The gallery screen showing two artworks: \emph{Marsh Boardwalk North} by Stan Cottle and \emph{The Mouth of the Lourmarin River} by Paul Camille Guigou (1867).}
 \label{fig:gallery}
 \end{figure}
 
-\section{Hover Interaction}
+\section{The Viewer}
 
-In the viewer, moving the cursor over a recognized region displays a popup with the poem title, poet name, a generated illustration, and a highlighted excerpt. The popup follows the cursor and updates as the user moves between regions.
+Clicking an artwork opens the viewer, as shown in Figure~\ref{fig:viewer}. The viewer displays the full artwork image with a crosshair cursor, indicating that the image is interactive. A ``Back to Gallery'' button in the upper left returns to the gallery screen.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.85\textwidth]{hover-popup.png}
-\caption{Hovering over the tidal creek in the Marsh painting reveals \emph{The Rime of the Ancient Mariner} by Samuel Taylor Coleridge.}
+\includegraphics[width=0.9\textwidth]{viewer-marsh.png}
+\caption{The viewer showing \emph{Marsh Boardwalk North}. The crosshair cursor invites the visitor to explore regions of the painting.}
+\label{fig:viewer}
+\end{figure}
+
+\subsection{Segment Tooltip}
+
+As the visitor moves the cursor over the artwork, a small tooltip appears showing the name of the region under the cursor (e.g., ``Sky'', ``Boardwalk'', ``Tidal Creek Water''). This provides orientation before clicking to explore a region's content.
+
+\subsection{Clicking on Regions}
+
+Clicking on a recognized region of the artwork opens a popup showing interpretive content through a lens, as shown in Figure~\ref{fig:hover}. Each click creates a new popup positioned near the click location.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{hover-marsh-tabs.png}
+\caption{A popup opened by clicking on the boardwalk region in the Marsh painting. The popup shows the Poetry lens with a poem excerpt by Herbert Morris. Note the Poetry and Math tabs at the top, indicating two available lenses for this region.}
 \label{fig:hover}
 \end{figure}
 
-\section{Click-to-Freeze Popup}
+\subsection{Multiple Simultaneous Popups}
 
-Clicking while a popup is visible pins it in place. The pinned popup displays a close button (\textsf{X}) in the top-right corner and converts the poem title into a hyperlink that opens the full poem in a new browser tab.
+Clicking on different regions opens additional popups without closing existing ones. This allows visitors to compare content across regions side by side. Each popup operates independently --- its tabs can be switched, it can be dragged and resized, and it is closed individually via its \textsf{X} button. Returning to the gallery clears all open popups.
+
+\subsection{Lens Tabs}
+
+When a region has multiple lenses, a tab bar appears at the top of the popup (see Figure~\ref{fig:hover}). Clicking a tab switches the popup content to that lens. The available lens types are listed in Table~\ref{tab:lenses}.
+
+When a region has only a single lens, the tab still appears as a label. The tab bar and the popup's border/padding areas serve as drag handles (see Section~\ref{sec:pinned}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Lens} & \textbf{Tab Label} & \textbf{Content Type} \\
+\midrule
+Poetry & Poetry & Poem excerpt with highlighted keyword \\
+Mathematics & Math & Geometric and mathematical analysis \\
+Computer Science & Comp Sci & Knowledge graphs, semantic networks \\
+Language & Language & Etymology and linguistic analysis \\
+Physics & Physics & Physical phenomena (e.g., Rayleigh scattering) \\
+Geology & Geology & Rock formations, geological processes \\
+Botany & Botany & Flora identification, ecosystems \\
+Material Science & Material Sci & Pigments, paint chemistry \\
+Cinematography & Cinema & Video bringing the scene to life \\
+\bottomrule
+\end{tabular}
+\caption{The nine lens types currently available in Deep Looking.}
+\label{tab:lenses}
+\end{table}
+
+\subsection{Popup Interaction}
+\label{sec:pinned}
+
+Every popup created by clicking on a region is immediately interactive, as shown in Figure~\ref{fig:pinned}. Each popup has the following properties:
+
+\begin{itemize}[nosep]
+\item A close button (\textsf{X}) appears in the top-right corner
+\item The title is a hyperlink to a reference source (e.g., the full poem, a Wikipedia article)
+\item The popup can be \textbf{dragged} by clicking and dragging the tab bar or any border/padding area (indicated by a grab cursor)
+\item The popup can be \textbf{resized} from any of its four corners
+\end{itemize}
+
+Clicking the \textsf{X} button closes that individual popup. Multiple popups can remain open simultaneously.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.85\textwidth]{pinned-popup.png}
-\caption{Pinned popup on the Marsh painting. The \textsf{X} button is visible and the title is now a clickable link to the full poem.}
+\includegraphics[width=0.9\textwidth]{pinned-popup.png}
+\caption{A pinned popup on the Lourmarin painting showing \emph{Ode to the West Wind} by Percy Bysshe Shelley. The Poetry and Material Sci tabs are visible, the close button appears, and the title is now a clickable hyperlink. The keyword ``sky'' is highlighted in orange.}
 \label{fig:pinned}
 \end{figure}
 
+\subsection{Image Lightbox}
+
+When a popup contains an image, clicking on that image opens a full-screen lightbox overlay (Figure~\ref{fig:lightbox}). The lightbox displays the image at full size against a dark background. Clicking anywhere in the lightbox dismisses it.
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.85\textwidth]{lourmarin-pinned.png}
-\caption{Pinned popup on the Lourmarin painting showing \emph{A Kind of Meadow} by Carl Phillips with the close button visible.}
-\label{fig:lourmarin}
+\includegraphics[width=0.9\textwidth]{image-lightbox.png}
+\caption{The image lightbox, activated by clicking on the illustration in a popup. The boardwalk illustration is shown at full size. Clicking anywhere dismisses the overlay.}
+\label{fig:lightbox}
 \end{figure}
 
-\section{Technical Architecture}
+\subsection{Whole-Image Lenses}
 
-The application is a single \texttt{index.html} file with embedded CSS and JavaScript:
+Some lenses apply to the entire artwork rather than a specific region. When whole-image lenses are available, a small rectangular icon button appears in the upper-right corner of the artwork (Figure~\ref{fig:wholeimage}). Clicking this button opens a pinned popup with the whole-image lens content.
+
+Currently, cinematography is the only whole-image lens. It displays a video that imagines the static painting coming to life. Clicking on the video in the popup shows it in a full-screen lightbox, just like images (Figure~\ref{fig:videolb}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{wholeimage-cinematography.png}
+\caption{The whole-image cinematography lens on the Lourmarin painting. The rectangular icon button is visible in the upper-right corner. The popup shows a video with the Cinema tab and a description of the cinematographic interpretation.}
+\label{fig:wholeimage}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{video-lightbox.png}
+\caption{The video lightbox, activated by clicking on the video in the cinematography popup. The video plays at full size against a dark background.}
+\label{fig:videolb}
+\end{figure}
+
+\section{Content Structure}
+
+\subsection{Directory Hierarchy}
+
+Deep Looking uses a structured directory hierarchy that mirrors the conceptual model of gallery, image, segment, and lens:
+
+\begin{Verbatim}[fontsize=\small]
+deeplooking/
+  index.html
+  images/
+    gallery.json
+    <image-id>/
+      manifest.json
+      <artwork-file>
+      segmentation_mask.png
+      <segment>/
+        <lens>/
+          <segment>.md
+          <image-or-video-file>
+      wholeimage/
+        <lens>/
+          wholeimage.md
+          <video-file>
+\end{Verbatim}
+
+\subsection{Gallery Configuration}
+
+The file \texttt{images/gallery.json} is a JSON array of image directory names:
+
+\begin{Verbatim}[fontsize=\small]
+["marsh", "lourmarin"]
+\end{Verbatim}
+
+The application loads each image's manifest and builds the gallery grid dynamically.
+
+\subsection{Manifest File}
+
+Each image directory contains a \texttt{manifest.json} that defines the artwork metadata, segmentation mask, and the mapping of segments to lenses:
+
+\begin{Verbatim}[fontsize=\small]
+{
+  "id": "marsh",
+  "title": "Marsh Boardwalk North -- Stan Cottle",
+  "gallery": "Story & Song Center for Arts and Culture",
+  "galleryUrl": "https://storyandsongarts.org/",
+  "image": "marsh.jpeg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": ["cinematography"],
+  "segments": [
+    {
+      "label": "Boardwalk",
+      "dir": "boardwalk",
+      "lenses": ["poetry", "math"],
+      "colorRule": { "r_gt": 110, "g_lt": 110, "b_lt": 60 }
+    }
+  ]
+}
+\end{Verbatim}
+
+The \texttt{colorRule} object defines RGB threshold conditions that map segmentation mask pixel colors to segment labels. The \texttt{imageLenses} field (optional) lists lenses that apply to the whole image, stored under the \texttt{wholeimage/} directory.
+
+\subsection{Markdown Files}
+
+Each lens provides its content via a Markdown file with a simple front-matter format:
+
+\begin{Verbatim}[fontsize=\small]
+title: Boardwalk
+poet: Herbert Morris
+url: https://newcriterion.com/article/boardwalk/
+image: marsh_boardwalk.png
+keyword: boardwalk
+
+My breath, turned smoke, is rising on the air.
+In the background, not completely in focus,
+lies the resort itself (the sea unseen),
+a mise-en-scene of small shops, baths, hotels,
+lining the boardwalk...
+\end{Verbatim}
+
+\noindent Fields:
+\begin{itemize}[nosep]
+\item \texttt{title} --- displayed as the popup heading (required)
+\item \texttt{poet} --- author or attribution line (may be empty)
+\item \texttt{url} --- hyperlink on the popup title (may be empty)
+\item \texttt{image} --- filename of an associated image in the same directory (may be empty)
+\item \texttt{video} --- filename of a video file, used instead of \texttt{image} (may be empty)
+\item \texttt{keyword} --- word highlighted in orange within the body text (may be empty)
+\end{itemize}
+
+The body text (everything after the blank line) is displayed in the popup below the image or video.
+
+\subsection{Segmentation Masks}
+
+Each artwork has an associated \texttt{segmentation\_mask.png} --- a flat-color image where each region is painted a distinct solid color. These masks are generated using Google Gemini (Nano Banana Pro) or similar segmentation tools. The application reads mask pixels via a hidden HTML canvas element to determine which segment the cursor is over when clicked.
+
+\section{Adding New Content}
+
+\subsection{Adding a New Artwork}
+
+\begin{enumerate}[nosep]
+\item Create a directory under \texttt{images/} with a unique ID (e.g., \texttt{images/mypainting/})
+\item Place the artwork image and segmentation mask in this directory
+\item Create a \texttt{manifest.json} defining the title, image, mask, and segments with color rules
+\item Add the directory name to \texttt{images/gallery.json}
+\item Create subdirectories for each segment, then lens subdirectories within each
+\item Add Markdown files following the front-matter format described above
+\end{enumerate}
+
+\subsection{Adding a New Lens to an Existing Segment}
+
+\begin{enumerate}[nosep]
+\item Create a subdirectory under the segment directory with the lens name
+\item Add a Markdown file named \texttt{<segment>.md} with front-matter and body text
+\item Optionally add an image or video file referenced in the Markdown
+\item Add the lens name to the segment's \texttt{lenses} array in \texttt{manifest.json}
+\end{enumerate}
+
+\subsection{Adding a Whole-Image Lens}
+
+\begin{enumerate}[nosep]
+\item Create the directory \texttt{<image>/wholeimage/<lens-name>/}
+\item Add a Markdown file named \texttt{wholeimage.md} with front-matter and body text
+\item Add the lens name to the \texttt{imageLenses} array in \texttt{manifest.json}
+\end{enumerate}
+
+\section{Current Artworks}
+
+The application currently includes two artworks, summarized in Table~\ref{tab:artworks}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Artwork} & \textbf{Segment} & \textbf{Lenses} & \textbf{Whole-Image} \\
+\midrule
+Marsh Boardwalk North & Boardwalk & Poetry, Math & --- \\
+(Stan Cottle) & Salt Marsh Vegetation & Poetry, Comp Sci, Language & \\
+ & Sky & Poetry, Physics & \\
+ & Tidal Creek Water & Poetry & \\
+\midrule
+The Mouth of the & Sky & Poetry, Material Sci & Cinema \\
+Lourmarin River & Cliffs & Poetry, Geology & \\
+(P.~C.~Guigou, 1867) & Meadow & Poetry, Botany & \\
+ & River & Poetry & \\
+ & Figures & Poetry & \\
+ & Trees & Poetry & \\
+\bottomrule
+\end{tabular}
+\caption{Current artworks with their segments and available lenses.}
+\label{tab:artworks}
+\end{table}
+
+\section{Technical Notes}
 
 \begin{itemize}
-\item \textbf{Segmentation masks} are generated by Google Gemini Pro, producing flat-color region maps.
-\item \textbf{Hover detection} uses pixel lookup on a hidden canvas --- no polygon data needed.
-\item \textbf{Proportional coordinate mapping} handles the mismatch between displayed artwork size and mask dimensions.
-\item \textbf{Poem data} is embedded as a JavaScript object, with each region mapped to a title, poet, excerpt, illustration, keyword, and URL.
+\item The application is a single HTML file with embedded CSS and JavaScript --- no build tools or frameworks are required.
+\item Segmentation detection uses pixel-level color matching on a hidden canvas, avoiding the need for polygon data.
+\item Proportional coordinate mapping handles the mismatch between the displayed image size and the mask resolution.
+\item All content is loaded dynamically via \texttt{fetch()}, with cache-busting query strings to ensure fresh data during development.
+\item The application is fully compatible with static hosting (e.g., GitHub Pages).
 \end{itemize}
 
 \end{document}

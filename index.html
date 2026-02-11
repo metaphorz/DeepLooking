@@ -55,13 +55,22 @@
   .popup.visible { opacity: 1; }
   .popup.pinned {
     pointer-events: auto;
-    resize: both;
     overflow: auto;
     min-width: 280px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
   }
-  .popup.pinned::-webkit-resizable {
-    background: #c4a35a;
+  .popup-resize {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    z-index: 10;
   }
+  .popup-resize.nw { top: 0; left: 0; cursor: nw-resize; }
+  .popup-resize.ne { top: 0; right: 0; cursor: ne-resize; }
+  .popup-resize.sw { bottom: 0; left: 0; cursor: sw-resize; }
+  .popup-resize.se { bottom: 0; right: 0; cursor: se-resize; }
   .popup.pinned .lens-tabs {
     cursor: grab;
   }
@@ -79,6 +88,7 @@
     line-height: 1;
   }
   .popup-close:hover { color: #fff; }
+  .popup-close:focus { outline: none; }
   .popup.pinned .popup-close { display: block; }
   .popup .poem-title a {
     color: #c4a35a;
@@ -106,6 +116,7 @@
     transition: color 0.2s, background 0.2s;
     text-transform: capitalize;
   }
+  .popup .lens-tab:focus { outline: none; }
   .popup .lens-tab:hover {
     color: #c4a35a;
   }
@@ -113,6 +124,13 @@
     color: #c4a35a;
     background: rgba(196,163,90,0.1);
     border-color: rgba(196,163,90,0.3);
+  }
+  .popup.pinned .poem-title,
+  .popup.pinned .poem-poet,
+  .popup.pinned .poem-text,
+  .popup.pinned .poem-image,
+  .popup.pinned .poem-video {
+    cursor: default;
   }
   .popup .poem-title {
     font-size: 1rem;
@@ -240,9 +258,22 @@
     transition: background 0.2s, border-color 0.2s;
     line-height: 1;
   }
+  .image-lens-btn:focus { outline: none; }
   .image-lens-btn:hover {
     background: rgba(196,163,90,0.2);
     border-color: #c4a35a;
+  }
+  .segment-tooltip {
+    position: fixed;
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid rgba(196,163,90,0.5);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: #c4a35a;
+    font-size: 0.75rem;
+    pointer-events: none;
+    z-index: 90;
+    white-space: nowrap;
   }
   .credits {
     margin-top: 16px;
@@ -257,7 +288,7 @@
 
 <!-- Gallery Screen -->
 <div id="gallery-screen" class="gallery">
-  <p class="subtitle" style="text-align:center">Select an artwork to explore</p>
+  <p class="subtitle" style="text-align:center">Select an image to explore</p>
   <div class="gallery-grid" id="gallery-grid"></div>
 </div>
 
@@ -268,15 +299,6 @@
   <div class="viewer" id="viewer">
     <img src="" id="artwork" alt="">
     <button class="image-lens-btn" id="image-lens-btn" title="Whole-image lenses">&#9645;</button>
-  </div>
-  <div class="popup" id="popup">
-    <span class="popup-close" id="popup-close">&times;</span>
-    <div class="lens-tabs" id="lens-tabs"></div>
-    <div class="poem-title" id="popup-title"></div>
-    <div class="poem-poet" id="popup-poet"></div>
-    <img class="poem-image" id="popup-image" alt="" style="display:none;">
-    <video class="poem-video" id="popup-video" controls autoplay loop muted style="display:none;"></video>
-    <div class="poem-text" id="popup-text"></div>
   </div>
 </div>
 
@@ -360,13 +382,6 @@ const galleryGrid = document.getElementById('gallery-grid');
 const backBtn = document.getElementById('back-btn');
 const viewerSubtitle = document.getElementById('viewer-subtitle');
 const artworkEl = document.getElementById('artwork');
-const popup = document.getElementById('popup');
-const lensTabs = document.getElementById('lens-tabs');
-const popupTitle = document.getElementById('popup-title');
-const popupPoet = document.getElementById('popup-poet');
-const popupImage = document.getElementById('popup-image');
-const popupVideo = document.getElementById('popup-video');
-const popupText = document.getElementById('popup-text');
 const maskCanvas = document.getElementById('maskCanvas');
 const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -377,10 +392,7 @@ let activeLensData = null;  // label -> [{lens, title, poet, url, image, keyword
 let activeImageLensData = null;  // [{lens, title, poet, url, image, video, keyword, text}, ...]
 let activeGetLabel = null;
 let activeBasePath = null;
-let currentLabel = null;
-let currentLensIndex = 0;
-let pinned = false;
-let pinnedData = null;
+let openPopups = [];  // track all open popup elements
 
 // --- Load gallery from manifests ---
 async function loadGallery() {
@@ -424,11 +436,10 @@ async function loadGallery() {
 async function openViewer(manifest, basePath) {
   activeBasePath = basePath;
   activeGetLabel = buildGetLabel(manifest.segments);
-  currentLabel = null;
 
   artworkEl.src = basePath + '/' + manifest.image;
   artworkEl.alt = manifest.title;
-  viewerSubtitle.textContent = 'Hover over regions to explore \u2014 ' + manifest.title;
+  viewerSubtitle.textContent = 'Mouse click in the image to explore \u2014 ' + manifest.title;
 
   // Load mask
   const maskImg = new Image();
@@ -509,230 +520,250 @@ async function openViewer(manifest, basePath) {
 imageLensBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (!activeImageLensData || activeImageLensData.length === 0) return;
-  // Unpin any existing popup
-  pinned = false;
-  pinnedData = null;
-  popup.classList.remove('pinned');
-  currentLabel = null;
-  // Build tabs and show content
-  currentLensIndex = 0;
-  buildTabs(activeImageLensData, 0);
-  showLensContent(activeImageLensData[0]);
-  // Position near the button
   const btnRect = imageLensBtn.getBoundingClientRect();
-  popup.style.left = (btnRect.left - 330) + 'px';
-  popup.style.top = (btnRect.bottom + 8) + 'px';
-  popup.classList.add('visible');
-  // Pin it immediately
-  pinned = true;
-  pinnedData = activeImageLensData[0];
-  popup.classList.add('pinned');
-  currentLabel = '__image__';
-  if (activeImageLensData[0].url) {
-    popupTitle.textContent = '';
-    const link = document.createElement('a');
-    link.href = activeImageLensData[0].url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = activeImageLensData[0].title;
-    popupTitle.appendChild(link);
-  }
+  createPopup(activeImageLensData, btnRect.left - 310, btnRect.bottom + 8);
 });
 
 // --- Back to gallery ---
 backBtn.addEventListener('click', () => {
   viewerScreen.classList.add('hidden');
   galleryScreen.classList.remove('hidden');
-  popup.classList.remove('visible');
-  popup.classList.remove('pinned');
-  pinned = false;
-  pinnedData = null;
-  currentLabel = null;
+  // Remove all open popups and tooltip
+  openPopups.forEach(p => p.remove());
+  openPopups = [];
   imageLensBtn.style.display = 'none';
+  if (document.querySelector('.segment-tooltip')) document.querySelector('.segment-tooltip').style.display = 'none';
 });
 
-// --- Popup positioning ---
-function positionPopup(clientX, clientY) {
-  const pw = 320;
-  const ph = popup.offsetHeight || 400;
-  let left = clientX + 20;
-  let top = clientY - 20;
-  if (left + pw > window.innerWidth - 10) left = clientX - pw - 20;
-  if (top + ph > window.innerHeight - 10) top = window.innerHeight - ph - 10;
-  if (top < 10) top = 10;
-  popup.style.left = left + 'px';
-  popup.style.top = top + 'px';
-}
+// --- Lightbox references ---
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxVideo = document.getElementById('lightbox-video');
 
-// --- Display a specific lens in the popup ---
-function showLensContent(data) {
-  popupTitle.textContent = data.title || '';
-  popupPoet.textContent = data.poet || '';
-  if (data.video) {
-    popupVideo.src = data.video;
-    popupVideo.load();
-    popupVideo.play();
-    popupVideo.style.display = 'block';
-    popupImage.style.display = 'none';
-  } else if (data.image) {
-    popupImage.src = data.image;
-    popupImage.alt = data.title || '';
-    popupImage.style.display = 'block';
-    popupVideo.style.display = 'none';
-    popupVideo.src = '';
-  } else {
-    popupImage.style.display = 'none';
-    popupVideo.style.display = 'none';
-    popupVideo.src = '';
+// --- Click or ESC to dismiss lightbox ---
+lightbox.addEventListener('click', () => {
+  lightbox.style.display = 'none';
+  lightboxVideo.src = '';
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+    lightbox.style.display = 'none';
+    lightboxVideo.src = '';
   }
-  setHighlightedText(popupText, data.text, data.keyword);
-}
+});
 
-// --- Build tab bar for a segment's lenses ---
-function buildTabs(lenses, activeIndex) {
-  lensTabs.textContent = '';
-  lensTabs.style.display = 'flex';
+// --- Create a new popup for given lenses at position ---
+function createPopup(lenses, posX, posY) {
+  const el = document.createElement('div');
+  el.className = 'popup visible pinned';
+  el.style.position = 'fixed';
+  el.style.zIndex = 100 + openPopups.length;
+
+  // Build inner structure using DOM methods
+  const closeBtn = document.createElement('span');
+  closeBtn.className = 'popup-close';
+  closeBtn.style.display = 'block';
+  closeBtn.textContent = '\u00D7';
+  const tabs = document.createElement('div');
+  tabs.className = 'lens-tabs';
+  tabs.style.display = 'flex';
+  const titleEl = document.createElement('div');
+  titleEl.className = 'poem-title';
+  const poetEl = document.createElement('div');
+  poetEl.className = 'poem-poet';
+  const imgEl = document.createElement('img');
+  imgEl.className = 'poem-image';
+  imgEl.style.display = 'none';
+  const vidEl = document.createElement('video');
+  vidEl.className = 'poem-video';
+  vidEl.controls = true; vidEl.autoplay = true; vidEl.loop = true; vidEl.muted = true;
+  vidEl.style.display = 'none';
+  const textEl = document.createElement('div');
+  textEl.className = 'poem-text';
+
+  el.appendChild(closeBtn);
+  el.appendChild(tabs);
+  el.appendChild(titleEl);
+  el.appendChild(poetEl);
+  el.appendChild(imgEl);
+  el.appendChild(vidEl);
+  el.appendChild(textEl);
+
+  // Show lens content in this popup
+  function showContent(data) {
+    titleEl.textContent = '';
+    if (data.url) {
+      const link = document.createElement('a');
+      link.href = data.url; link.target = '_blank'; link.rel = 'noopener';
+      link.textContent = data.title || '';
+      titleEl.appendChild(link);
+    } else {
+      titleEl.textContent = data.title || '';
+    }
+    poetEl.textContent = data.poet || '';
+    if (data.video) {
+      vidEl.src = data.video; vidEl.load(); vidEl.play();
+      vidEl.style.display = 'block'; imgEl.style.display = 'none';
+    } else if (data.image) {
+      imgEl.src = data.image; imgEl.alt = data.title || '';
+      imgEl.style.display = 'block'; vidEl.style.display = 'none'; vidEl.src = '';
+    } else {
+      imgEl.style.display = 'none'; vidEl.style.display = 'none'; vidEl.src = '';
+    }
+    setHighlightedText(textEl, data.text, data.keyword);
+  }
+
+  // Build tabs
+  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema' };
   lenses.forEach((lensObj, i) => {
     const tab = document.createElement('button');
-    tab.className = 'lens-tab' + (i === activeIndex ? ' active' : '');
-    const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema' };
+    tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
     tab.textContent = lensDisplayNames[lensObj.lens] || lensObj.lens;
     tab.addEventListener('click', (e) => {
       e.stopPropagation();
-      currentLensIndex = i;
-      showLensContent(lenses[i]);
-      // Update active tab styling
-      lensTabs.querySelectorAll('.lens-tab').forEach((t, j) => {
-        t.classList.toggle('active', j === i);
-      });
-      // If pinned, update the hyperlink on the title
-      if (pinned && lenses[i].url) {
-        popupTitle.textContent = '';
-        const link = document.createElement('a');
-        link.href = lenses[i].url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.textContent = lenses[i].title;
-        popupTitle.appendChild(link);
-      }
+      showContent(lenses[i]);
+      tabs.querySelectorAll('.lens-tab').forEach((t, j) => t.classList.toggle('active', j === i));
     });
-    lensTabs.appendChild(tab);
+    tabs.appendChild(tab);
   });
+
+  // Show first lens
+  showContent(lenses[0]);
+
+  // Position
+  const pw = 320;
+  let left = posX + 20, top = posY - 20;
+  if (left + pw > window.innerWidth - 10) left = posX - pw - 20;
+  if (top + 400 > window.innerHeight - 10) top = window.innerHeight - 410;
+  if (top < 10) top = 10;
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
+
+  // Close button
+  closeBtn.addEventListener('click', () => {
+    el.remove();
+    openPopups = openPopups.filter(p => p !== el);
+  });
+
+  // Click image to open lightbox
+  imgEl.addEventListener('click', () => {
+    if (!imgEl.src || imgEl.style.display === 'none') return;
+    lightboxVideo.style.display = 'none'; lightboxVideo.src = '';
+    lightboxImg.src = imgEl.src; lightboxImg.alt = imgEl.alt;
+    lightboxImg.style.display = 'block';
+    lightbox.style.display = 'flex';
+  });
+
+  // Click video to open lightbox
+  vidEl.addEventListener('click', () => {
+    if (!vidEl.src || vidEl.style.display === 'none') return;
+    lightboxImg.style.display = 'none';
+    lightboxVideo.src = vidEl.src;
+    lightboxVideo.currentTime = vidEl.currentTime;
+    lightboxVideo.style.display = 'block'; lightboxVideo.play();
+    lightbox.style.display = 'flex';
+  });
+
+  // Draggable from tab bar or any edge/padding area of the popup
+  let dragging = false, dragOffX = 0, dragOffY = 0;
+  function startDrag(e) {
+    dragging = true;
+    dragOffX = e.clientX - el.getBoundingClientRect().left;
+    dragOffY = e.clientY - el.getBoundingClientRect().top;
+    el.classList.add('dragging');
+    e.preventDefault();
+  }
+  tabs.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('lens-tab')) return;
+    startDrag(e);
+  });
+  el.addEventListener('mousedown', (e) => {
+    // Drag when clicking directly on the popup (padding/border), not on child content
+    if (e.target === el) startDrag(e);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    el.style.left = (e.clientX - dragOffX) + 'px';
+    el.style.top = (e.clientY - dragOffY) + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; el.classList.remove('dragging'); }
+  });
+
+  // Resize handles on all four corners
+  ['nw','ne','sw','se'].forEach(corner => {
+    const handle = document.createElement('div');
+    handle.className = 'popup-resize ' + corner;
+    el.appendChild(handle);
+    let resizing = false, startX, startY, startW, startH, startL, startT;
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      resizing = true;
+      startX = e.clientX; startY = e.clientY;
+      const rect = el.getBoundingClientRect();
+      startW = rect.width; startH = rect.height;
+      startL = rect.left; startT = rect.top;
+      const onMove = (ev) => {
+        if (!resizing) return;
+        const dx = ev.clientX - startX, dy = ev.clientY - startY;
+        if (corner.includes('e')) el.style.width = Math.max(280, startW + dx) + 'px';
+        if (corner.includes('w')) { el.style.width = Math.max(280, startW - dx) + 'px'; el.style.left = (startL + dx) + 'px'; }
+        if (corner.includes('s')) el.style.height = (startH + dy) + 'px';
+        if (corner.includes('n')) { el.style.height = (startH - dy) + 'px'; el.style.top = (startT + dy) + 'px'; }
+      };
+      const onUp = () => { resizing = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+
+  viewerScreen.appendChild(el);
+  openPopups.push(el);
+  return el;
 }
 
-// --- Hover interaction ---
+// --- Hover tooltip showing segment name ---
+const tooltip = document.createElement('div');
+tooltip.className = 'segment-tooltip';
+tooltip.style.display = 'none';
+document.body.appendChild(tooltip);
+
 artworkEl.addEventListener('mousemove', (e) => {
   if (!activeLensData || !activeGetLabel) return;
-  if (pinned) return;
-
   const rect = artworkEl.getBoundingClientRect();
   const relX = (e.clientX - rect.left) / rect.width;
   const relY = (e.clientY - rect.top) / rect.height;
   const maskX = Math.floor(relX * maskCanvas.width);
   const maskY = Math.floor(relY * maskCanvas.height);
-
   const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
   const label = activeGetLabel(pixel[0], pixel[1], pixel[2]);
-
-  if (label && activeLensData[label] && activeLensData[label].length > 0) {
-    if (label !== currentLabel) {
-      const lenses = activeLensData[label];
-      const randomIndex = lenses.length > 1 ? Math.floor(Math.random() * lenses.length) : 0;
-      currentLensIndex = randomIndex;
-      buildTabs(lenses, randomIndex);
-      showLensContent(lenses[randomIndex]);
-      currentLabel = label;
-    }
-    popup.classList.add('visible');
-    positionPopup(e.clientX, e.clientY);
+  if (label && activeLensData[label]) {
+    tooltip.textContent = label;
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY + 14) + 'px';
+    tooltip.style.display = 'block';
   } else {
-    popup.classList.remove('visible');
-    currentLabel = null;
+    tooltip.style.display = 'none';
   }
 });
 
 artworkEl.addEventListener('mouseleave', () => {
-  if (pinned) return;
-  popup.classList.remove('visible');
-  currentLabel = null;
+  tooltip.style.display = 'none';
 });
 
-// --- Click to pin popup ---
-artworkEl.addEventListener('click', () => {
-  if (pinned || !popup.classList.contains('visible') || !currentLabel) return;
-  const lenses = activeLensData[currentLabel];
-  if (!lenses || lenses.length === 0) return;
-  const data = lenses[currentLensIndex];
-  pinned = true;
-  pinnedData = data;
-  popup.classList.add('pinned');
-  if (data.url) {
-    popupTitle.textContent = '';
-    const link = document.createElement('a');
-    link.href = data.url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = data.title;
-    popupTitle.appendChild(link);
+// --- Click on artwork to open popup ---
+artworkEl.addEventListener('click', (e) => {
+  if (!activeLensData || !activeGetLabel) return;
+  const rect = artworkEl.getBoundingClientRect();
+  const relX = (e.clientX - rect.left) / rect.width;
+  const relY = (e.clientY - rect.top) / rect.height;
+  const maskX = Math.floor(relX * maskCanvas.width);
+  const maskY = Math.floor(relY * maskCanvas.height);
+  const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
+  const label = activeGetLabel(pixel[0], pixel[1], pixel[2]);
+  if (label && activeLensData[label] && activeLensData[label].length > 0) {
+    createPopup(activeLensData[label], e.clientX, e.clientY);
   }
-});
-
-// --- Close button unpins popup ---
-document.getElementById('popup-close').addEventListener('click', () => {
-  pinned = false;
-  pinnedData = null;
-  popup.classList.remove('pinned');
-  popup.classList.remove('visible');
-  currentLabel = null;
-});
-
-// --- Image/video lightbox: hover to enlarge, mouse move to dismiss ---
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxVideo = document.getElementById('lightbox-video');
-
-popupImage.addEventListener('mouseenter', () => {
-  if (!popupImage.src || popupImage.style.display === 'none') return;
-  lightboxVideo.style.display = 'none';
-  lightboxVideo.src = '';
-  lightboxImg.src = popupImage.src;
-  lightboxImg.alt = popupImage.alt;
-  lightboxImg.style.display = 'block';
-  lightbox.style.display = 'flex';
-});
-
-popupVideo.addEventListener('mouseenter', () => {
-  if (!popupVideo.src || popupVideo.style.display === 'none') return;
-  lightboxImg.style.display = 'none';
-  lightboxVideo.src = popupVideo.src;
-  lightboxVideo.currentTime = popupVideo.currentTime;
-  lightboxVideo.style.display = 'block';
-  lightboxVideo.play();
-  lightbox.style.display = 'flex';
-});
-
-lightbox.addEventListener('mousemove', () => {
-  lightbox.style.display = 'none';
-  lightboxVideo.src = '';
-});
-
-// --- Draggable pinned popup ---
-let dragging = false, dragOffX = 0, dragOffY = 0;
-lensTabs.addEventListener('mousedown', (e) => {
-  if (!pinned || e.target.classList.contains('lens-tab')) return;
-  dragging = true;
-  dragOffX = e.clientX - popup.getBoundingClientRect().left;
-  dragOffY = e.clientY - popup.getBoundingClientRect().top;
-  popup.classList.add('dragging');
-  e.preventDefault();
-});
-document.addEventListener('mousemove', (e) => {
-  if (!dragging) return;
-  popup.style.left = (e.clientX - dragOffX) + 'px';
-  popup.style.top = (e.clientY - dragOffY) + 'px';
-});
-document.addEventListener('mouseup', () => {
-  if (dragging) { dragging = false; popup.classList.remove('dragging'); }
 });
 
 // --- Initialize ---
