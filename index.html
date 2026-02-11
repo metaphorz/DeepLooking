@@ -298,7 +298,7 @@
   <p class="subtitle" id="viewer-subtitle"></p>
   <div class="viewer" id="viewer">
     <img src="" id="artwork" alt="">
-    <button class="image-lens-btn" id="image-lens-btn" title="Whole-image lenses">&#9645;</button>
+    <button class="image-lens-btn" id="image-lens-btn">&#9645;</button>
   </div>
 </div>
 
@@ -393,6 +393,12 @@ let activeImageLensData = null;  // [{lens, title, poet, url, image, video, keyw
 let activeGetLabel = null;
 let activeBasePath = null;
 let openPopups = [];  // track all open popup elements
+
+// --- Segment/region tooltip ---
+const tooltip = document.createElement('div');
+tooltip.className = 'segment-tooltip';
+tooltip.style.display = 'none';
+document.body.appendChild(tooltip);
 
 // --- Load gallery from manifests ---
 async function loadGallery() {
@@ -517,6 +523,18 @@ async function openViewer(manifest, basePath) {
 }
 
 // --- Image lens button click ---
+// --- Whole-image button tooltip (instant, matching segment tooltip) ---
+imageLensBtn.addEventListener('mouseenter', (e) => {
+  const rect = imageLensBtn.getBoundingClientRect();
+  tooltip.textContent = 'Whole image';
+  tooltip.style.left = (rect.left - 80) + 'px';
+  tooltip.style.top = (rect.bottom + 6) + 'px';
+  tooltip.style.display = 'block';
+});
+imageLensBtn.addEventListener('mouseleave', () => {
+  tooltip.style.display = 'none';
+});
+
 imageLensBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (!activeImageLensData || activeImageLensData.length === 0) return;
@@ -723,11 +741,6 @@ function createPopup(lenses, posX, posY) {
 }
 
 // --- Hover tooltip showing segment name ---
-const tooltip = document.createElement('div');
-tooltip.className = 'segment-tooltip';
-tooltip.style.display = 'none';
-document.body.appendChild(tooltip);
-
 artworkEl.addEventListener('mousemove', (e) => {
   if (!activeLensData || !activeGetLabel) return;
   const rect = artworkEl.getBoundingClientRect();
