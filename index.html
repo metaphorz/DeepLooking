@@ -221,6 +221,29 @@
     background: rgba(196,163,90,0.15);
   }
   .hidden { display: none; }
+  .image-lens-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(196,163,90,0.6);
+    background: rgba(26, 26, 46, 0.8);
+    color: #c4a35a;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: background 0.2s, border-color 0.2s;
+    line-height: 1;
+  }
+  .image-lens-btn:hover {
+    background: rgba(196,163,90,0.2);
+    border-color: #c4a35a;
+  }
   .credits {
     margin-top: 16px;
     font-size: 0.75rem;
@@ -244,6 +267,7 @@
   <p class="subtitle" id="viewer-subtitle"></p>
   <div class="viewer" id="viewer">
     <img src="" id="artwork" alt="">
+    <button class="image-lens-btn" id="image-lens-btn" title="Whole-image lenses">&#9645;</button>
   </div>
   <div class="popup" id="popup">
     <span class="popup-close" id="popup-close">&times;</span>
@@ -256,9 +280,10 @@
   </div>
 </div>
 
-<!-- Image lightbox overlay -->
+<!-- Image/video lightbox overlay -->
 <div class="image-lightbox" id="lightbox" style="display:none;">
   <img id="lightbox-img" src="" alt="">
+  <video id="lightbox-video" autoplay loop muted style="display:none; max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 40px rgba(0,0,0,0.8);"></video>
 </div>
 
 <!-- Hidden canvas for reading segmentation mask pixels -->
@@ -345,8 +370,11 @@ const popupText = document.getElementById('popup-text');
 const maskCanvas = document.getElementById('maskCanvas');
 const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
+const imageLensBtn = document.getElementById('image-lens-btn');
+
 // --- Active viewer state ---
 let activeLensData = null;  // label -> [{lens, title, poet, url, image, keyword, text}, ...]
+let activeImageLensData = null;  // [{lens, title, poet, url, image, video, keyword, text}, ...]
 let activeGetLabel = null;
 let activeBasePath = null;
 let currentLabel = null;
@@ -444,9 +472,72 @@ async function openViewer(manifest, basePath) {
   }
   activeLensData = lensData;
 
+  // Load whole-image lenses (e.g. cinematography) from wholeimage/ directory
+  activeImageLensData = [];
+  if (manifest.imageLenses && manifest.imageLenses.length > 0) {
+    for (const lens of manifest.imageLenses) {
+      const lensDir = basePath + '/wholeimage/' + lens;
+      const mdPath = lensDir + '/wholeimage.md';
+      try {
+        const resp = await fetch(mdPath + cb);
+        if (resp.ok) {
+          const text = await resp.text();
+          const meta = parsePoemMarkdown(text);
+          activeImageLensData.push({
+            lens: lens,
+            title: meta.title,
+            poet: meta.poet,
+            url: meta.url,
+            image: meta.image ? lensDir + '/' + meta.image : '',
+            video: meta.video ? lensDir + '/' + meta.video : '',
+            keyword: meta.keyword,
+            text: meta.text
+          });
+        }
+      } catch (e) {
+        console.warn('Could not load image lens ' + mdPath, e);
+      }
+    }
+  }
+  imageLensBtn.style.display = activeImageLensData.length > 0 ? 'flex' : 'none';
+
   galleryScreen.classList.add('hidden');
   viewerScreen.classList.remove('hidden');
 }
+
+// --- Image lens button click ---
+imageLensBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!activeImageLensData || activeImageLensData.length === 0) return;
+  // Unpin any existing popup
+  pinned = false;
+  pinnedData = null;
+  popup.classList.remove('pinned');
+  currentLabel = null;
+  // Build tabs and show content
+  currentLensIndex = 0;
+  buildTabs(activeImageLensData, 0);
+  showLensContent(activeImageLensData[0]);
+  // Position near the button
+  const btnRect = imageLensBtn.getBoundingClientRect();
+  popup.style.left = (btnRect.left - 330) + 'px';
+  popup.style.top = (btnRect.bottom + 8) + 'px';
+  popup.classList.add('visible');
+  // Pin it immediately
+  pinned = true;
+  pinnedData = activeImageLensData[0];
+  popup.classList.add('pinned');
+  currentLabel = '__image__';
+  if (activeImageLensData[0].url) {
+    popupTitle.textContent = '';
+    const link = document.createElement('a');
+    link.href = activeImageLensData[0].url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = activeImageLensData[0].title;
+    popupTitle.appendChild(link);
+  }
+});
 
 // --- Back to gallery ---
 backBtn.addEventListener('click', () => {
@@ -457,6 +548,7 @@ backBtn.addEventListener('click', () => {
   pinned = false;
   pinnedData = null;
   currentLabel = null;
+  imageLensBtn.style.display = 'none';
 });
 
 // --- Popup positioning ---
@@ -499,10 +591,6 @@ function showLensContent(data) {
 // --- Build tab bar for a segment's lenses ---
 function buildTabs(lenses, activeIndex) {
   lensTabs.textContent = '';
-  if (lenses.length <= 1) {
-    lensTabs.style.display = 'none';
-    return;
-  }
   lensTabs.style.display = 'flex';
   lenses.forEach((lensObj, i) => {
     const tab = document.createElement('button');
@@ -598,19 +686,34 @@ document.getElementById('popup-close').addEventListener('click', () => {
   currentLabel = null;
 });
 
-// --- Image lightbox: hover to enlarge, mouse move to dismiss ---
+// --- Image/video lightbox: hover to enlarge, mouse move to dismiss ---
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
+const lightboxVideo = document.getElementById('lightbox-video');
 
 popupImage.addEventListener('mouseenter', () => {
   if (!popupImage.src || popupImage.style.display === 'none') return;
+  lightboxVideo.style.display = 'none';
+  lightboxVideo.src = '';
   lightboxImg.src = popupImage.src;
   lightboxImg.alt = popupImage.alt;
+  lightboxImg.style.display = 'block';
+  lightbox.style.display = 'flex';
+});
+
+popupVideo.addEventListener('mouseenter', () => {
+  if (!popupVideo.src || popupVideo.style.display === 'none') return;
+  lightboxImg.style.display = 'none';
+  lightboxVideo.src = popupVideo.src;
+  lightboxVideo.currentTime = popupVideo.currentTime;
+  lightboxVideo.style.display = 'block';
+  lightboxVideo.play();
   lightbox.style.display = 'flex';
 });
 
 lightbox.addEventListener('mousemove', () => {
   lightbox.style.display = 'none';
+  lightboxVideo.src = '';
 });
 
 // --- Draggable pinned popup ---
