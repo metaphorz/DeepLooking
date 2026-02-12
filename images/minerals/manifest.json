@@ -1,0 +1,8 @@
+{
+  "id": "minerals",
+  "title": "Minerals — Photograph Talbot Island, Paul Fishwick",
+  "image": "minerals.jpeg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": ["geology", "mineralogy"],
+  "segments": []
+}

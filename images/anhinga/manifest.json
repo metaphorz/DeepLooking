@@ -1,0 +1,26 @@
+{
+  "id": "anhinga",
+  "title": "Anhinga — Photograph Amelia Island, Paul Fishwick",
+  "image": "anhinga.jpeg",
+  "mask": "segmentation_mask.png",
+  "segments": [
+    {
+      "label": "Anhinga",
+      "dir": "bird",
+      "lenses": ["language", "hieroglyph", "anatomy"],
+      "colorRule": { "r_gt": 200, "g_lt": 50, "b_lt": 50 }
+    },
+    {
+      "label": "Grass",
+      "dir": "grass",
+      "lenses": ["history", "botany"],
+      "colorRule": { "r_lt": 50, "g_gt": 200, "b_lt": 50 }
+    },
+    {
+      "label": "Pond",
+      "dir": "pond",
+      "lenses": ["hydrology", "engineering", "ecology"],
+      "colorRule": { "r_lt": 50, "g_lt": 50, "b_gt": 200 }
+    }
+  ]
+}
