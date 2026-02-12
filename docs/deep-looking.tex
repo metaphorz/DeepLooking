@@ -53,7 +53,7 @@ The application opens with a gallery of artwork thumbnails, as shown in Figure~\
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.9\textwidth]{gallery.png}
-\caption{The gallery screen showing two artworks: \emph{Marsh Boardwalk North} by Stan Cottle and \emph{The Mouth of the Lourmarin River} by Paul Camille Guigou (1867).}
+\caption{The gallery screen showing four artworks in a 2$\times$2 grid: \emph{Marsh Boardwalk North} (Stan Cottle), \emph{The Mouth of the Lourmarin River} (P.~C.~Guigou, 1867), \emph{Anhinga} (Paul Fishwick), and \emph{Minerals} (Paul Fishwick).}
 \label{fig:gallery}
 \end{figure}
 
@@ -104,13 +104,20 @@ Mathematics & Math & Geometric and mathematical analysis \\
 Computer Science & Comp Sci & Knowledge graphs, semantic networks \\
 Language & Language & Etymology and linguistic analysis \\
 Physics & Physics & Physical phenomena (e.g., Rayleigh scattering) \\
-Geology & Geology & Rock formations, geological processes \\
-Botany & Botany & Flora identification, ecosystems \\
+Geology & Geology & Rock formations, wave sorting \\
+Botany & Botany & Flora identification, growth patterns \\
 Material Science & Material Sci & Pigments, paint chemistry \\
 Cinematography & Cinema & Video bringing the scene to life \\
+History & History & Historical and cultural origins \\
+Hieroglyph & Hieroglyph & Ancient Egyptian sign connections \\
+Anatomy & Anatomy & Anatomical structure and function \\
+Hydrology & Hydrology & Water management, retention systems \\
+Engineering & Engineering & Civil engineering design and structures \\
+Ecology & Ecology & Ecosystems, habitat, and biodiversity \\
+Mineralogy & Mineralogy & Mineral identification and properties \\
 \bottomrule
 \end{tabular}
-\caption{The nine lens types currently available in Deep Looking.}
+\caption{The sixteen lens types currently available in Deep Looking.}
 \label{tab:lenses}
 \end{table}
 
@@ -150,7 +157,7 @@ When a popup contains an image, clicking on that image opens a full-screen light
 
 Some lenses apply to the entire artwork rather than a specific region. When whole-image lenses are available, a small rectangular icon button appears in the upper-right corner of the artwork (Figure~\ref{fig:wholeimage}). Clicking this button opens a pinned popup with the whole-image lens content.
 
-Currently, cinematography is the only whole-image lens. It displays a video that imagines the static painting coming to life. Clicking on the video in the popup shows it in a full-screen lightbox, just like images (Figure~\ref{fig:videolb}).
+Whole-image lenses include cinematography (video bringing a painting to life), geology, and mineralogy. The Minerals photograph uses whole-image lenses exclusively, with no segment-level interaction. Clicking on the video or image in the popup shows it in a full-screen lightbox (Figure~\ref{fig:videolb}).
 
 \begin{figure}[h]
 \centering
@@ -196,7 +203,7 @@ deeplooking/
 The file \texttt{images/gallery.json} is a JSON array of image directory names:
 
 \begin{Verbatim}[fontsize=\small]
-["marsh", "lourmarin"]
+["marsh", "lourmarin", "anhinga", "minerals"]
 \end{Verbatim}
 
 The application loads each image's manifest and builds the gallery grid dynamically.
@@ -293,7 +300,7 @@ Each artwork has an associated \texttt{segmentation\_mask.png} --- a flat-color 
 
 \section{Current Artworks}
 
-The application currently includes two artworks, summarized in Table~\ref{tab:artworks}.
+The application currently includes four artworks, summarized in Table~\ref{tab:artworks}.
 
 \begin{table}[h]
 \centering
@@ -313,6 +320,13 @@ Lourmarin River & Cliffs & Poetry, Geology & \\
  & River & Poetry & \\
  & Figures & Poetry & \\
  & Trees & Poetry & \\
+\midrule
+Anhinga & Anhinga (bird) & Language, Hieroglyph, Anatomy & --- \\
+(Paul Fishwick) & Grass & History, Botany & \\
+ & Pond & Hydrology, Engineering, Ecology & \\
+\midrule
+Minerals & --- & --- & Geology, Mineralogy \\
+(Paul Fishwick) & & & \\
 \bottomrule
 \end{tabular}
 \caption{Current artworks with their segments and available lenses.}
