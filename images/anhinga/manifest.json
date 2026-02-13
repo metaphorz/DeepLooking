@@ -13,7 +13,7 @@
     {
       "label": "Grass",
       "dir": "grass",
-      "lenses": ["history", "botany"],
+      "lenses": ["history", "botany", "modeling"],
       "colorRule": { "r_lt": 50, "g_gt": 200, "b_lt": 50 }
     },
     {
