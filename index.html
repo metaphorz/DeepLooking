@@ -55,13 +55,20 @@
   .popup.visible { opacity: 1; }
   .popup.pinned {
     pointer-events: auto;
-    overflow-y: auto;
+    overflow: hidden;
     max-height: 33vh;
     min-width: 280px;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
     cursor: grab;
+    display: flex;
+    flex-direction: column;
+  }
+  .popup-content {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
   }
   .popup-resize {
     position: absolute;
@@ -669,14 +676,17 @@ function createPopup(lenses, posX, posY) {
   const textEl = document.createElement('div');
   textEl.className = 'poem-text';
 
+  const contentWrap = document.createElement('div');
+  contentWrap.className = 'popup-content';
+  contentWrap.appendChild(titleEl);
+  contentWrap.appendChild(poetEl);
+  contentWrap.appendChild(imgEl);
+  contentWrap.appendChild(vidEl);
+  contentWrap.appendChild(ytEl);
+  contentWrap.appendChild(textEl);
   el.appendChild(closeBtn);
   el.appendChild(tabs);
-  el.appendChild(titleEl);
-  el.appendChild(poetEl);
-  el.appendChild(imgEl);
-  el.appendChild(vidEl);
-  el.appendChild(ytEl);
-  el.appendChild(textEl);
+  el.appendChild(contentWrap);
 
   // Show lens content in this popup
   function showContent(data) {
