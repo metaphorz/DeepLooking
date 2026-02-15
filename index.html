@@ -805,6 +805,7 @@ function createPopup(lenses, posX, posY) {
     let resizing = false, startX, startY, startW, startH, startL, startT;
     function startResize(cx, cy) {
       resizing = true;
+      el.style.maxHeight = 'none';
       startX = cx; startY = cy;
       const rect = el.getBoundingClientRect();
       startW = rect.width; startH = rect.height;
