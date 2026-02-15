@@ -755,20 +755,18 @@ function createPopup(lenses, posX, posY) {
 
   // Draggable from tab bar or any edge/padding area of the popup
   let dragging = false, dragOffX = 0, dragOffY = 0;
-  function startDrag(e) {
+  function startDrag(clientX, clientY) {
     dragging = true;
-    dragOffX = e.clientX - el.getBoundingClientRect().left;
-    dragOffY = e.clientY - el.getBoundingClientRect().top;
+    dragOffX = clientX - el.getBoundingClientRect().left;
+    dragOffY = clientY - el.getBoundingClientRect().top;
     el.classList.add('dragging');
-    e.preventDefault();
   }
   tabs.addEventListener('mousedown', (e) => {
     if (e.target.classList.contains('lens-tab')) return;
-    startDrag(e);
+    e.preventDefault(); startDrag(e.clientX, e.clientY);
   });
   el.addEventListener('mousedown', (e) => {
-    // Drag when clicking directly on the popup (padding/border), not on child content
-    if (e.target === el) startDrag(e);
+    if (e.target === el) { e.preventDefault(); startDrag(e.clientX, e.clientY); }
   });
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return;
@@ -778,6 +776,23 @@ function createPopup(lenses, posX, posY) {
   document.addEventListener('mouseup', () => {
     if (dragging) { dragging = false; el.classList.remove('dragging'); }
   });
+  // Touch support for dragging
+  tabs.addEventListener('touchstart', (e) => {
+    if (e.target.classList.contains('lens-tab')) return;
+    e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY);
+  }, { passive: false });
+  el.addEventListener('touchstart', (e) => {
+    if (e.target === el) { e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY); }
+  }, { passive: false });
+  document.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    e.preventDefault(); const t = e.touches[0];
+    el.style.left = (t.clientX - dragOffX) + 'px';
+    el.style.top = (t.clientY - dragOffY) + 'px';
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (dragging) { dragging = false; el.classList.remove('dragging'); }
+  });
 
   // Resize handles on all four corners
   ['nw','ne','sw','se'].forEach(corner => {
@@ -785,25 +800,37 @@ function createPopup(lenses, posX, posY) {
     handle.className = 'popup-resize ' + corner;
     el.appendChild(handle);
     let resizing = false, startX, startY, startW, startH, startL, startT;
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault(); e.stopPropagation();
+    function startResize(cx, cy) {
       resizing = true;
-      startX = e.clientX; startY = e.clientY;
+      startX = cx; startY = cy;
       const rect = el.getBoundingClientRect();
       startW = rect.width; startH = rect.height;
       startL = rect.left; startT = rect.top;
-      const onMove = (ev) => {
-        if (!resizing) return;
-        const dx = ev.clientX - startX, dy = ev.clientY - startY;
-        if (corner.includes('e')) el.style.width = Math.max(280, startW + dx) + 'px';
-        if (corner.includes('w')) { el.style.width = Math.max(280, startW - dx) + 'px'; el.style.left = (startL + dx) + 'px'; }
-        if (corner.includes('s')) el.style.height = (startH + dy) + 'px';
-        if (corner.includes('n')) { el.style.height = (startH - dy) + 'px'; el.style.top = (startT + dy) + 'px'; }
-      };
+    }
+    function doResize(cx, cy) {
+      if (!resizing) return;
+      const dx = cx - startX, dy = cy - startY;
+      if (corner.includes('e')) el.style.width = Math.max(280, startW + dx) + 'px';
+      if (corner.includes('w')) { el.style.width = Math.max(280, startW - dx) + 'px'; el.style.left = (startL + dx) + 'px'; }
+      if (corner.includes('s')) el.style.height = (startH + dy) + 'px';
+      if (corner.includes('n')) { el.style.height = (startH - dy) + 'px'; el.style.top = (startT + dy) + 'px'; }
+    }
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      startResize(e.clientX, e.clientY);
+      const onMove = (ev) => doResize(ev.clientX, ev.clientY);
       const onUp = () => { resizing = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
+    handle.addEventListener('touchstart', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const t = e.touches[0]; startResize(t.clientX, t.clientY);
+      const onMove = (ev) => { ev.preventDefault(); const t2 = ev.touches[0]; doResize(t2.clientX, t2.clientY); };
+      const onUp = () => { resizing = false; document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); };
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    }, { passive: false });
   });
 
   viewerScreen.appendChild(el);
