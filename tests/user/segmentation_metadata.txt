@@ -1,0 +1,164 @@
+```json
+[
+  {
+    "label_name": "Quinces",
+    "rgb_color": {
+      "R": 255,
+      "G": 255,
+      "B": 0
+    },
+    "colorRule": {
+      "r_gt": 254,
+      "r_lt": 256,
+      "g_gt": 254,
+      "g_lt": 256,
+      "b_gt": -1,
+      "b_lt": 1
+    }
+  },
+  {
+    "label_name": "Hanging Birds",
+    "rgb_color": {
+      "R": 0,
+      "G": 255,
+      "B": 0
+    },
+    "colorRule": {
+      "r_gt": -1,
+      "r_lt": 1,
+      "g_gt": 254,
+      "g_lt": 256,
+      "b_gt": -1,
+      "b_lt": 1
+    }
+  },
+  {
+    "label_name": "Apples",
+    "rgb_color": {
+      "R": 0,
+      "G": 255,
+      "B": 255
+    },
+    "colorRule": {
+      "r_gt": -1,
+      "r_lt": 1,
+      "g_gt": 254,
+      "g_lt": 256,
+      "b_gt": 254,
+      "b_lt": 256
+    }
+  },
+  {
+    "label_name": "Cardoon",
+    "rgb_color": {
+      "R": 255,
+      "G": 128,
+      "B": 0
+    },
+    "colorRule": {
+      "r_gt": 254,
+      "r_lt": 256,
+      "g_gt": 127,
+      "g_lt": 129,
+      "b_gt": -1,
+      "b_lt": 1
+    }
+  },
+  {
+    "label_name": "Partridge",
+    "rgb_color": {
+      "R": 255,
+      "G": 0,
+      "B": 0
+    },
+    "colorRule": {
+      "r_gt": 254,
+      "r_lt": 256,
+      "g_gt": -1,
+      "g_lt": 1,
+      "b_gt": -1,
+      "b_lt": 1
+    }
+  },
+  {
+    "label_name": "Root Vegetables",
+    "rgb_color": {
+      "R": 0,
+      "G": 0,
+      "B": 255
+    },
+    "colorRule": {
+      "r_gt": -1,
+      "r_lt": 1,
+      "g_gt": -1,
+      "g_lt": 1,
+      "b_gt": 254,
+      "b_lt": 256
+    }
+  },
+  {
+    "label_name": "Bamboo Cane",
+    "rgb_color": {
+      "R": 255,
+      "G": 0,
+      "B": 255
+    },
+    "colorRule": {
+      "r_gt": 254,
+      "r_lt": 256,
+      "g_gt": -1,
+      "g_lt": 1,
+      "b_gt": 254,
+      "b_lt": 256
+    }
+  },
+  {
+    "label_name": "Cane Birds",
+    "rgb_color": {
+      "R": 128,
+      "G": 0,
+      "B": 255
+    },
+    "colorRule": {
+      "r_gt": 127,
+      "r_lt": 129,
+      "g_gt": -1,
+      "g_lt": 1,
+      "b_gt": 254,
+      "b_lt": 256
+    }
+  },
+  {
+    "label_name": "Stone Ledge",
+    "rgb_color": {
+      "R": 128,
+      "G": 128,
+      "B": 128
+    },
+    "colorRule": {
+      "r_gt": 127,
+      "r_lt": 129,
+      "g_gt": 127,
+      "g_lt": 129,
+      "b_gt": 127,
+      "b_lt": 129
+    }
+  },
+  {
+    "label_name": "Dark Void",
+    "rgb_color": {
+      "R": 0,
+      "G": 0,
+      "B": 0
+    },
+    "colorRule": {
+      "r_gt": -1,
+      "r_lt": 1,
+      "g_gt": -1,
+      "g_lt": 1,
+      "b_gt": -1,
+      "b_lt": 1
+    }
+  }
+]
+```

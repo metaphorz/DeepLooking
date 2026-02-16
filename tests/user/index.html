@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA MESH — Cotán Still Life</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+    color: #c4a35a;
+    cursor: pointer;
+  }
+  h1:hover { text-decoration: underline; }
+  .subtitle {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .gallery-link {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .gallery-link a {
+    color: #888;
+    text-decoration: none;
+  }
+  .gallery-link a:hover {
+    color: #c4a35a;
+    text-decoration: underline;
+  }
+  .viewer {
+    position: relative;
+    display: inline-block;
+    cursor: crosshair;
+  }
+  .viewer img {
+    display: block;
+    max-width: 95vw;
+    max-height: 78vh;
+  }
+  .popup {
+    position: fixed;
+    background: rgba(26, 26, 46, 0.97);
+    border: 1px solid #c4a35a;
+    border-radius: 10px;
+    padding: 16px;
+    color: #e0e0e0;
+    z-index: 100;
+    width: 460px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    pointer-events: auto;
+    overflow: hidden;
+    max-height: 40vh;
+    min-width: 360px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    display: flex;
+    flex-direction: column;
+  }
+  .popup-content {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  .popup-resize {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    z-index: 10;
+    touch-action: none;
+  }
+  .popup-resize.nw { top: 0; left: 0; cursor: nw-resize; }
+  .popup-resize.ne { top: 0; right: 0; cursor: ne-resize; }
+  .popup-resize.sw { bottom: 0; left: 0; cursor: sw-resize; }
+  .popup-resize.se { bottom: 0; right: 0; cursor: se-resize; }
+  .popup .lens-tabs {
+    cursor: grab;
+    touch-action: none;
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(196,163,90,0.3);
+    flex-shrink: 0;
+  }
+  .popup.dragging .lens-tabs { cursor: grabbing; }
+  .popup-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.3rem;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 5;
+  }
+  .popup-close:hover { color: #fff; }
+  .popup .lens-tab {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-family: 'Georgia', serif;
+    color: #888;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: none;
+    transition: color 0.2s, background 0.2s;
+    text-transform: capitalize;
+  }
+  .popup .lens-tab:focus { outline: none; }
+  .popup .lens-tab:hover { color: #c4a35a; }
+  .popup .lens-tab.active {
+    color: #c4a35a;
+    background: rgba(196,163,90,0.1);
+    border-color: rgba(196,163,90,0.3);
+  }
+  .popup .poem-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #c4a35a;
+    margin-bottom: 2px;
+  }
+  .popup .poem-title a {
+    color: #c4a35a;
+    text-decoration: none;
+  }
+  .popup .poem-title a:hover { text-decoration: underline; }
+  .popup .poem-poet {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .popup .poem-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .popup .poem-text {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: #d0d0d0;
+    white-space: pre-line;
+  }
+  .image-lightbox {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: pointer;
+  }
+  .image-lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
+  }
+  .image-lens-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(196,163,90,0.6);
+    background: rgba(26, 26, 46, 0.8);
+    color: #c4a35a;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: background 0.2s, border-color 0.2s;
+    line-height: 1;
+  }
+  .image-lens-btn:focus { outline: none; }
+  .image-lens-btn:hover {
+    background: rgba(196,163,90,0.2);
+    border-color: #c4a35a;
+  }
+  .segment-tooltip {
+    position: fixed;
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid rgba(196,163,90,0.5);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: #c4a35a;
+    font-size: 0.75rem;
+    pointer-events: none;
+    z-index: 90;
+    white-space: nowrap;
+  }
+  .about-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+  }
+  .about-box {
+    max-width: 600px;
+    padding: 32px;
+    background: rgba(26, 26, 46, 0.97);
+    border: 1px solid #c4a35a;
+    border-radius: 10px;
+    color: #d0d0d0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    text-align: center;
+    position: relative;
+  }
+  .about-box h2 {
+    color: #c4a35a;
+    margin-bottom: 16px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+  }
+  .about-close {
+    position: absolute;
+    top: 10px; right: 14px;
+    color: #999;
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  .about-close:hover { color: #fff; }
+  .credits {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<h1 id="about-link">LA MESH</h1>
+<p class="subtitle">Click on the image to explore — Still Life with Game, Vegetables and Fruit — Juan Sánchez Cotán, 1602</p>
+<p class="gallery-link"><a href="https://www.museodelprado.es/" target="_blank" rel="noopener">Museo del Prado</a></p>
+
+<!-- About overlay -->
+<div class="about-overlay" id="about-overlay" style="display:none;">
+  <div class="about-box">
+    <span class="about-close" id="about-close">&times;</span>
+    <h2>LA MESH</h2>
+    <p>Language &middot; Art &middot; Mathematics &middot; Engineering &middot; Science &middot; History</p>
+    <br>
+    What do you see when you look at an image? LA MESH explores six academic lenses — Language, Art, Mathematics, Engineering, Science, and History — revealing the depth hidden in everyday scenes and artworks. Click on any region to discover what each discipline has to say about it.
+    <div class="credits">Paul Fishwick and Claude Code</div>
+  </div>
+</div>
+
+<div class="viewer" id="viewer">
+  <img src="cotan.jpg" id="artwork" alt="Still Life with Game, Vegetables and Fruit — Cotán, 1602">
+  <button class="image-lens-btn" id="image-lens-btn" style="display:none;">&#9645;</button>
+</div>
+
+<!-- Lightbox -->
+<div class="image-lightbox" id="lightbox" style="display:none;">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- Hidden canvas for mask -->
+<canvas id="maskCanvas" style="display:none;"></canvas>
+
+<script>
+// --- Markdown parser ---
+function parsePoemMarkdown(text) {
+  const lines = text.split('\n');
+  const meta = {};
+  let bodyStart = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim() === '') { bodyStart = i + 1; break; }
+    const colon = line.indexOf(':');
+    if (colon > 0) {
+      const key = line.substring(0, colon).trim();
+      const val = line.substring(colon + 1).trim();
+      meta[key] = val;
+    }
+  }
+  meta.text = lines.slice(bodyStart).join('\n').trim();
+  return meta;
+}
+
+// --- Color rule matcher ---
+function buildGetLabel(segments) {
+  return function(r, g, b) {
+    for (const seg of segments) {
+      const rule = seg.colorRule;
+      let match = true;
+      if (rule.r_gt !== undefined && !(r > rule.r_gt)) match = false;
+      if (rule.r_lt !== undefined && !(r < rule.r_lt)) match = false;
+      if (rule.g_gt !== undefined && !(g > rule.g_gt)) match = false;
+      if (rule.g_lt !== undefined && !(g < rule.g_lt)) match = false;
+      if (rule.b_gt !== undefined && !(b > rule.b_gt)) match = false;
+      if (rule.b_lt !== undefined && !(b < rule.b_lt)) match = false;
+      if (match) return seg.label;
+    }
+    return null;
+  };
+}
+
+// --- Keyword highlighting ---
+function setHighlightedText(container, text, keyword) {
+  container.textContent = '';
+  if (!keyword) { container.textContent = text; return; }
+  const regex = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  const parts = text.split(regex);
+  for (const part of parts) {
+    if (regex.test(part)) {
+      regex.lastIndex = 0;
+      const span = document.createElement('span');
+      span.style.color = '#e8913a';
+      span.style.fontWeight = '600';
+      span.textContent = part;
+      container.appendChild(span);
+    } else {
+      container.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+// --- DOM refs ---
+const artworkEl = document.getElementById('artwork');
+const maskCanvas = document.getElementById('maskCanvas');
+const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+const imageLensBtn = document.getElementById('image-lens-btn');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+
+let activeLensData = null;
+let activeImageLensData = null;
+let activeGetLabel = null;
+let openPopups = [];
+
+// --- Tooltip ---
+const tooltip = document.createElement('div');
+tooltip.className = 'segment-tooltip';
+tooltip.style.display = 'none';
+document.body.appendChild(tooltip);
+
+// --- Lens display names ---
+const lensDisplayNames = {
+  language: 'Language', art: 'Art', math: 'Math',
+  engineering: 'Engineering', science: 'Science', history: 'History'
+};
+
+// --- Create popup ---
+function createPopup(lenses, posX, posY) {
+  const el = document.createElement('div');
+  el.className = 'popup';
+  el.style.position = 'fixed';
+  el.style.zIndex = 100 + openPopups.length;
+
+  const closeBtn = document.createElement('span');
+  closeBtn.className = 'popup-close';
+  closeBtn.textContent = '\u00D7';
+
+  const tabs = document.createElement('div');
+  tabs.className = 'lens-tabs';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'poem-title';
+  const poetEl = document.createElement('div');
+  poetEl.className = 'poem-poet';
+  const imgEl = document.createElement('img');
+  imgEl.className = 'poem-image';
+  imgEl.style.display = 'none';
+  const textEl = document.createElement('div');
+  textEl.className = 'poem-text';
+
+  const contentWrap = document.createElement('div');
+  contentWrap.className = 'popup-content';
+  contentWrap.appendChild(titleEl);
+  contentWrap.appendChild(poetEl);
+  contentWrap.appendChild(imgEl);
+  contentWrap.appendChild(textEl);
+
+  el.appendChild(closeBtn);
+  el.appendChild(tabs);
+  el.appendChild(contentWrap);
+
+  function showContent(data) {
+    titleEl.textContent = '';
+    if (data.url) {
+      const link = document.createElement('a');
+      link.href = data.url; link.target = '_blank'; link.rel = 'noopener';
+      link.textContent = data.title || '';
+      titleEl.appendChild(link);
+    } else {
+      titleEl.textContent = data.title || '';
+    }
+    poetEl.textContent = data.poet || '';
+    if (data.image) {
+      imgEl.src = data.image; imgEl.alt = data.title || '';
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+    setHighlightedText(textEl, data.text, data.keyword);
+  }
+
+  // Build tabs
+  lenses.forEach((lensObj, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = lensDisplayNames[lensObj.lens] || lensObj.lens;
+    tab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showContent(lenses[i]);
+      tabs.querySelectorAll('.lens-tab').forEach((t, j) => t.classList.toggle('active', j === i));
+    });
+    tabs.appendChild(tab);
+  });
+
+  showContent(lenses[0]);
+
+  // Position
+  const pw = 460;
+  let left = posX + 20, top = posY - 20;
+  if (left + pw > window.innerWidth - 10) left = posX - pw - 20;
+  if (top + 400 > window.innerHeight - 10) top = window.innerHeight - 410;
+  if (top < 10) top = 10;
+  if (left < 10) left = 10;
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
+
+  // Close
+  closeBtn.addEventListener('click', () => {
+    el.remove();
+    openPopups = openPopups.filter(p => p !== el);
+  });
+
+  // Lightbox for images
+  imgEl.addEventListener('click', () => {
+    if (!imgEl.src || imgEl.style.display === 'none') return;
+    lightboxImg.src = imgEl.src; lightboxImg.alt = imgEl.alt;
+    lightbox.style.display = 'flex';
+  });
+
+  // Drag from tab bar
+  let dragging = false, dragOffX = 0, dragOffY = 0;
+  function startDrag(cx, cy) {
+    dragging = true;
+    dragOffX = cx - el.getBoundingClientRect().left;
+    dragOffY = cy - el.getBoundingClientRect().top;
+    el.classList.add('dragging');
+  }
+  tabs.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('lens-tab')) return;
+    e.preventDefault(); startDrag(e.clientX, e.clientY);
+  });
+  el.addEventListener('mousedown', (e) => {
+    if (e.target === el) { e.preventDefault(); startDrag(e.clientX, e.clientY); }
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    el.style.left = (e.clientX - dragOffX) + 'px';
+    el.style.top = (e.clientY - dragOffY) + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; el.classList.remove('dragging'); }
+  });
+  // Touch drag
+  tabs.addEventListener('touchstart', (e) => {
+    if (e.target.classList.contains('lens-tab')) return;
+    e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY);
+  }, { passive: false });
+  document.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    e.preventDefault(); const t = e.touches[0];
+    el.style.left = (t.clientX - dragOffX) + 'px';
+    el.style.top = (t.clientY - dragOffY) + 'px';
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (dragging) { dragging = false; el.classList.remove('dragging'); }
+  });
+
+  // Resize handles
+  ['nw','ne','sw','se'].forEach(corner => {
+    const handle = document.createElement('div');
+    handle.className = 'popup-resize ' + corner;
+    el.appendChild(handle);
+    let resizing = false, startX, startY, startW, startH, startL, startT;
+    function startResize(cx, cy) {
+      resizing = true;
+      el.style.maxHeight = 'none';
+      startX = cx; startY = cy;
+      const rect = el.getBoundingClientRect();
+      startW = rect.width; startH = rect.height;
+      startL = rect.left; startT = rect.top;
+    }
+    function doResize(cx, cy) {
+      if (!resizing) return;
+      const dx = cx - startX, dy = cy - startY;
+      if (corner.includes('e')) el.style.width = Math.max(280, startW + dx) + 'px';
+      if (corner.includes('w')) { el.style.width = Math.max(280, startW - dx) + 'px'; el.style.left = (startL + dx) + 'px'; }
+      if (corner.includes('s')) el.style.height = (startH + dy) + 'px';
+      if (corner.includes('n')) { el.style.height = (startH - dy) + 'px'; el.style.top = (startT + dy) + 'px'; }
+    }
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      startResize(e.clientX, e.clientY);
+      const onMove = (ev) => doResize(ev.clientX, ev.clientY);
+      const onUp = () => { resizing = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+    handle.addEventListener('touchstart', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const t = e.touches[0]; startResize(t.clientX, t.clientY);
+      const onMove = (ev) => { ev.preventDefault(); doResize(ev.touches[0].clientX, ev.touches[0].clientY); };
+      const onUp = () => { resizing = false; document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); };
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    }, { passive: false });
+  });
+
+  document.body.appendChild(el);
+  openPopups.push(el);
+  return el;
+}
+
+// --- Hover tooltip ---
+artworkEl.addEventListener('mousemove', (e) => {
+  if (!activeLensData || !activeGetLabel) return;
+  const rect = artworkEl.getBoundingClientRect();
+  const relX = (e.clientX - rect.left) / rect.width;
+  const relY = (e.clientY - rect.top) / rect.height;
+  const maskX = Math.floor(relX * maskCanvas.width);
+  const maskY = Math.floor(relY * maskCanvas.height);
+  const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
+  const label = activeGetLabel(pixel[0], pixel[1], pixel[2]);
+  if (label && activeLensData[label]) {
+    tooltip.textContent = label;
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY + 14) + 'px';
+    tooltip.style.display = 'block';
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+artworkEl.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+// --- Click to open popup ---
+artworkEl.addEventListener('click', (e) => {
+  if (!activeLensData || !activeGetLabel) return;
+  const rect = artworkEl.getBoundingClientRect();
+  const relX = (e.clientX - rect.left) / rect.width;
+  const relY = (e.clientY - rect.top) / rect.height;
+  const maskX = Math.floor(relX * maskCanvas.width);
+  const maskY = Math.floor(relY * maskCanvas.height);
+  const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
+  const label = activeGetLabel(pixel[0], pixel[1], pixel[2]);
+  if (label && activeLensData[label] && activeLensData[label].length > 0) {
+    createPopup(activeLensData[label], e.clientX, e.clientY);
+  }
+});
+
+// --- Whole-image button ---
+imageLensBtn.addEventListener('mouseenter', (e) => {
+  const rect = imageLensBtn.getBoundingClientRect();
+  tooltip.textContent = 'Whole image';
+  tooltip.style.left = (rect.left - 80) + 'px';
+  tooltip.style.top = (rect.bottom + 6) + 'px';
+  tooltip.style.display = 'block';
+});
+imageLensBtn.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+imageLensBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!activeImageLensData || activeImageLensData.length === 0) return;
+  const btnRect = imageLensBtn.getBoundingClientRect();
+  createPopup(activeImageLensData, btnRect.left - 480, btnRect.bottom + 8);
+});
+
+// --- Lightbox dismiss ---
+lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lightbox.style.display === 'flex') lightbox.style.display = 'none';
+});
+
+// --- About overlay ---
+const aboutOverlay = document.getElementById('about-overlay');
+document.getElementById('about-link').addEventListener('click', () => { aboutOverlay.style.display = 'flex'; });
+document.getElementById('about-close').addEventListener('click', () => { aboutOverlay.style.display = 'none'; });
+aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) aboutOverlay.style.display = 'none'; });
+
+// --- Load manifest and initialize ---
+async function init() {
+  const cb = '?t=' + Date.now();
+  const resp = await fetch('manifest.json' + cb);
+  const manifest = await resp.json();
+
+  activeGetLabel = buildGetLabel(manifest.segments);
+
+  // Load mask
+  const maskImg = new Image();
+  maskImg.onload = function() {
+    maskCanvas.width = maskImg.width;
+    maskCanvas.height = maskImg.height;
+    maskCtx.drawImage(maskImg, 0, 0);
+  };
+  maskImg.src = manifest.mask + cb;
+
+  // Load lens data
+  const lensData = {};
+  for (const seg of manifest.segments) {
+    const lenses = [];
+    for (const lens of seg.lenses) {
+      const mdPath = seg.dir + '/' + lens + '/' + seg.dir + '.md';
+      try {
+        const r = await fetch(mdPath + cb);
+        if (r.ok) {
+          const text = await r.text();
+          const meta = parsePoemMarkdown(text);
+          lenses.push({
+            lens: lens,
+            title: meta.title,
+            poet: meta.poet,
+            url: meta.url,
+            image: meta.image ? seg.dir + '/' + lens + '/' + meta.image : '',
+            keyword: meta.keyword,
+            text: meta.text
+          });
+        }
+      } catch (e) { console.warn('Could not load ' + mdPath, e); }
+    }
+    if (lenses.length > 0) lensData[seg.label] = lenses;
+  }
+  activeLensData = lensData;
+
+  // Load whole-image lenses
+  activeImageLensData = [];
+  if (manifest.imageLenses) {
+    for (const lens of manifest.imageLenses) {
+      const mdPath = 'wholeimage/' + lens + '/wholeimage.md';
+      try {
+        const r = await fetch(mdPath + cb);
+        if (r.ok) {
+          const text = await r.text();
+          const meta = parsePoemMarkdown(text);
+          activeImageLensData.push({
+            lens: lens,
+            title: meta.title,
+            poet: meta.poet,
+            url: meta.url,
+            image: meta.image ? 'wholeimage/' + lens + '/' + meta.image : '',
+            keyword: meta.keyword,
+            text: meta.text
+          });
+        }
+      } catch (e) { console.warn('Could not load ' + mdPath, e); }
+    }
+  }
+  imageLensBtn.style.display = activeImageLensData.length > 0 ? 'flex' : 'none';
+
+  console.log('LA MESH initialized:', Object.keys(lensData).length, 'segments loaded');
+}
+
+init();
+</script>
+</body>
+</html>

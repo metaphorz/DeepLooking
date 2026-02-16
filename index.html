@@ -49,7 +49,6 @@
     opacity: 0;
     transition: opacity 0.2s;
     z-index: 100;
-    width: 320px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   }
   .popup.visible { opacity: 1; }
@@ -126,6 +125,7 @@
     background: none;
     transition: color 0.2s, background 0.2s;
     text-transform: capitalize;
+    white-space: nowrap;
   }
   .popup .lens-tab:focus { outline: none; }
   .popup .lens-tab:hover {
@@ -192,8 +192,8 @@
     width: 100%;
   }
   .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 280px);
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 24px;
     margin-top: 20px;
@@ -716,7 +716,7 @@ function createPopup(lenses, posX, posY) {
   }
 
   // Build tabs
-  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education' };
+  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education', math: 'Mathematics', engineering: 'Engineering', science: 'Science', history: 'History' };
   lenses.forEach((lensObj, i) => {
     const tab = document.createElement('button');
     tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
@@ -732,8 +732,17 @@ function createPopup(lenses, posX, posY) {
   // Show first lens
   showContent(lenses[0]);
 
+  // Auto-size popup width to fit tabs
+  el.style.visibility = 'hidden';
+  el.style.width = '9999px';
+  document.body.appendChild(el);
+  const tabsNaturalWidth = tabs.scrollWidth;
+  el.remove();
+  el.style.visibility = '';
+  const pw = Math.max(320, Math.min(600, tabsNaturalWidth + 34));
+  el.style.width = pw + 'px';
+
   // Position
-  const pw = 320;
   let left = posX + 20, top = posY - 20;
   if (left + pw > window.innerWidth - 10) left = posX - pw - 20;
   if (top + 400 > window.innerHeight - 10) top = window.innerHeight - 410;

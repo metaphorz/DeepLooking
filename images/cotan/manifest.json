@@ -1,0 +1,71 @@
+{
+  "id": "cotan",
+  "title": "Still Life with Game, Vegetables and Fruit — Juan Sánchez Cotán, 1602",
+  "gallery": "Museo del Prado (on loan from Real Academia de Bellas Artes de San Fernando)",
+  "galleryUrl": "https://www.museodelprado.es/",
+  "image": "cotan.jpg",
+  "mask": "segmentation_mask.png",
+  "segments": [
+    {
+      "label": "Quinces",
+      "dir": "quinces",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 200, "g_gt": 200, "b_lt": 50 }
+    },
+    {
+      "label": "Hanging Birds",
+      "dir": "hangingbirds",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_lt": 50, "g_gt": 200, "b_lt": 50 }
+    },
+    {
+      "label": "Apples",
+      "dir": "apples",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 200, "g_lt": 50, "b_lt": 50 }
+    },
+    {
+      "label": "Partridge",
+      "dir": "partridge",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_lt": 50, "g_gt": 200, "b_gt": 200 }
+    },
+    {
+      "label": "Cardoon",
+      "dir": "cardoon",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 200, "g_gt": 100, "g_lt": 170, "b_lt": 50 }
+    },
+    {
+      "label": "Root Vegetables",
+      "dir": "rootvegetables",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 100, "r_lt": 170, "g_lt": 50, "b_gt": 200 }
+    },
+    {
+      "label": "Bamboo Cane",
+      "dir": "bamboocane",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 200, "g_lt": 50, "b_gt": 200 }
+    },
+    {
+      "label": "Cane Birds",
+      "dir": "canebirds",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_lt": 50, "g_lt": 50, "b_gt": 200 }
+    },
+    {
+      "label": "Stone Ledge",
+      "dir": "stoneledge",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_gt": 100, "r_lt": 170, "g_gt": 100, "g_lt": 170, "b_gt": 100, "b_lt": 170 }
+    },
+    {
+      "label": "Dark Void",
+      "dir": "darkvoid",
+      "lenses": ["language", "art", "math", "engineering", "science", "history"],
+      "colorRule": { "r_lt": 50, "g_lt": 50, "b_lt": 50 }
+    }
+  ],
+  "imageLenses": ["art", "history"]
+}

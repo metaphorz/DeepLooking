@@ -1,0 +1,52 @@
+[
+  {
+    "label": "Quinces",
+    "location": "Upper-left corner, hanging from a branch with leaves",
+    "description": "A cluster of bright yellow citrus fruits (traditionally identified as quinces) with green leaves and a woody branch"
+  },
+  {
+    "label": "Apples",
+    "location": "Center-left, hanging from converging strings",
+    "description": "A cluster of approximately 9 red and yellow-green apples suspended by thin strings in a net-like arrangement"
+  },
+  {
+    "label": "Hanging Birds",
+    "location": "Two small birds hanging from strings at top-center, between the apples and the large game birds",
+    "description": "Two small dead birds suspended individually from thin strings near the top edge of the painting"
+  },
+  {
+    "label": "Cane Birds",
+    "location": "A stack of small birds impaled on a vertical cane/stick resting on the stone ledge at lower-left",
+    "description": "A group of small dead birds skewered on a green cane, stacked vertically, resting on the ledge below the yellow fruits"
+  },
+  {
+    "label": "Bamboo Cane",
+    "location": "Vertically along the left edge, resting on the ledge and leaning against the niche wall",
+    "description": "A thick, segmented, green bamboo stalk with visible nodes, used to skewer the small birds"
+  },
+  {
+    "label": "Partridge",
+    "location": "Hanging upside down, slightly right of center, from the top edge",
+    "description": "A large, plump game bird with rich brown, grey-blue, and black-speckled plumage, suspended by a string"
+  },
+  {
+    "label": "Cardoon",
+    "location": "Dominates the right side of the ledge, curving upwards and leftwards",
+    "description": "A very large, pale white to light purple-grey vegetable with numerous thick, fibrous stalks forming a dramatic crescent shape"
+  },
+  {
+    "label": "Root Vegetables",
+    "location": "Resting on the ledge at bottom-center, between the bamboo cane and the cardoon",
+    "description": "A group of root vegetables including a reddish-purple carrot, an orange carrot with green tops, and two white radishes"
+  },
+  {
+    "label": "Stone Ledge",
+    "location": "Horizontal surface across the bottom third plus vertical walls on left and right edges",
+    "description": "The stone niche structure including the horizontal shelf, front face, left wall, right wall, and artist signature area"
+  },
+  {
+    "label": "Dark Void",
+    "location": "Behind all objects, filling the upper and central parts of the painting",
+    "description": "The deep, uniform dark background suggesting a void or enclosed dark space behind the hanging objects"
+  }
+]
