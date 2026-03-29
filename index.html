@@ -772,9 +772,7 @@ function createPopup(lenses, posX, posY) {
       const subclass = code.replace(/[0-9.].*/,'');
       const page = locPages[subclass] || 1;
       const locLink = document.createElement('a');
-      const desc = data.loc.includes('\u2014') ? data.loc.split('\u2014')[1].trim().split('.')[0].trim() : '';
-      const searchParam = desc ? '&search=' + encodeURIComponent(desc) : '';
-      locLink.href = 'https://www.loc.gov/aba/cataloging/classification/lcco/lcco_' + letter + '.pdf#page=' + page + searchParam;
+      locLink.href = 'https://www.loc.gov/aba/cataloging/classification/lcco/lcco_' + letter + '.pdf#page=' + page;
       locLink.target = '_blank';
       locLink.rel = 'noopener';
       locLink.textContent = data.loc;
