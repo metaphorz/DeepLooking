@@ -356,7 +356,20 @@
 
 <!-- Gallery Screen -->
 <div id="gallery-screen" class="gallery">
-  <p class="subtitle" style="text-align:center">Select an image to explore</p>
+  <div style="text-align:center; margin-bottom: 12px;">
+    <label for="gallery-select" class="subtitle" style="margin-right: 8px;">Gallery:</label>
+    <select id="gallery-select" style="
+      background: #1a1a2e;
+      color: #c4a35a;
+      border: 1px solid rgba(196,163,90,0.5);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: 'Georgia', serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+    "></select>
+  </div>
+  <p class="subtitle" style="text-align:center" id="gallery-subtitle">Select an image to explore</p>
   <div class="gallery-grid" id="gallery-grid"></div>
 </div>
 
@@ -454,6 +467,8 @@ const maskCanvas = document.getElementById('maskCanvas');
 const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
 const imageLensBtn = document.getElementById('image-lens-btn');
+const gallerySelect = document.getElementById('gallery-select');
+const gallerySubtitle = document.getElementById('gallery-subtitle');
 
 // --- Active viewer state ---
 let activeLensData = null;  // label -> [{lens, title, poet, url, image, keyword, text}, ...]
@@ -468,14 +483,40 @@ tooltip.className = 'segment-tooltip';
 tooltip.style.display = 'none';
 document.body.appendChild(tooltip);
 
-// --- Load gallery from manifests ---
-async function loadGallery() {
+// --- Gallery list ---
+let galleriesList = [];
+
+async function loadGalleries() {
   const cacheBust = '?t=' + Date.now();
-  const galleryResp = await fetch('images/gallery.json' + cacheBust);
+  const resp = await fetch('galleries.json' + cacheBust);
+  galleriesList = await resp.json();
+
+  while (gallerySelect.firstChild) gallerySelect.removeChild(gallerySelect.firstChild);
+  for (const g of galleriesList) {
+    const opt = document.createElement('option');
+    opt.value = g.id;
+    opt.textContent = g.name + ' \u2014 ' + g.author;
+    gallerySelect.appendChild(opt);
+  }
+  await loadGalleryImages(galleriesList[0].id);
+}
+
+gallerySelect.addEventListener('change', () => {
+  loadGalleryImages(gallerySelect.value);
+});
+
+// --- Load gallery images from manifests ---
+async function loadGalleryImages(galleryId) {
+  while (galleryGrid.firstChild) galleryGrid.removeChild(galleryGrid.firstChild);
+  const galleryPath = 'galleries/' + galleryId;
+  const cacheBust = '?t=' + Date.now();
+  const galleryResp = await fetch(galleryPath + '/gallery.json' + cacheBust);
   const imageIds = await galleryResp.json();
 
+  gallerySubtitle.textContent = 'Select an image to explore';
+
   for (const id of imageIds) {
-    const basePath = 'images/' + id;
+    const basePath = galleryPath + '/' + id;
     const manifestResp = await fetch(basePath + '/manifest.json' + cacheBust);
     const manifest = await manifestResp.json();
 
@@ -545,7 +586,8 @@ async function openViewer(manifest, basePath) {
             video: meta.video ? basePath + '/' + seg.dir + '/' + lens + '/' + meta.video : '',
             youtube: meta.youtube || '',
             keyword: meta.keyword,
-            text: meta.text
+            text: meta.text,
+            loc: meta.loc || ''
           });
         }
       } catch (e) {
@@ -578,7 +620,8 @@ async function openViewer(manifest, basePath) {
             video: meta.video ? lensDir + '/' + meta.video : '',
             youtube: meta.youtube || '',
             keyword: meta.keyword,
-            text: meta.text
+            text: meta.text,
+            loc: meta.loc || ''
           });
         }
       } catch (e) {
@@ -676,6 +719,8 @@ function createPopup(lenses, posX, posY) {
   ytEl.allowFullscreen = true;
   const textEl = document.createElement('div');
   textEl.className = 'poem-text';
+  const locEl = document.createElement('div');
+  locEl.style.cssText = 'margin-top:10px;font-size:0.7rem;color:#777;font-style:italic;';
 
   const contentWrap = document.createElement('div');
   contentWrap.className = 'popup-content';
@@ -685,6 +730,7 @@ function createPopup(lenses, posX, posY) {
   contentWrap.appendChild(vidEl);
   contentWrap.appendChild(ytEl);
   contentWrap.appendChild(textEl);
+  contentWrap.appendChild(locEl);
   el.appendChild(closeBtn);
   el.appendChild(tabs);
   el.appendChild(contentWrap);
@@ -714,6 +760,28 @@ function createPopup(lenses, posX, posY) {
       imgEl.style.display = 'none'; vidEl.style.display = 'none'; vidEl.src = ''; ytEl.style.display = 'none'; ytEl.src = '';
     }
     setHighlightedText(textEl, data.text, data.keyword);
+    while (locEl.firstChild) locEl.removeChild(locEl.firstChild);
+    const locPages = {
+      Q:2, QA:3, QC:5, QE:7, QH:8, QK:9, QL:10, QM:11,
+      P:2, PJ:12, PN:19, D:3, G:2, GB:5, L:2, LB:4, N:2, T:2, TA:3
+    };
+    if (data.loc) {
+      locEl.appendChild(document.createTextNode('Library of Congress: '));
+      const code = data.loc.split(' ')[0];
+      const letter = code.charAt(0).toLowerCase();
+      const subclass = code.replace(/[0-9.].*/,'');
+      const page = locPages[subclass] || 1;
+      const locLink = document.createElement('a');
+      locLink.href = 'https://www.loc.gov/aba/cataloging/classification/lcco/lcco_' + letter + '.pdf#page=' + page;
+      locLink.target = '_blank';
+      locLink.rel = 'noopener';
+      locLink.textContent = data.loc;
+      locLink.style.cssText = 'color:#c4a35a;text-decoration:none;';
+      locLink.addEventListener('mouseenter', () => { locLink.style.textDecoration = 'underline'; });
+      locLink.addEventListener('mouseleave', () => { locLink.style.textDecoration = 'none'; });
+      locLink.addEventListener('click', (e) => e.stopPropagation());
+      locEl.appendChild(locLink);
+    }
   }
 
   // Build tabs
@@ -914,7 +982,7 @@ aboutOverlay.addEventListener('click', (e) => {
 });
 
 // --- Initialize ---
-loadGallery();
+loadGalleries();
 </script>
 </body>
 </html>
