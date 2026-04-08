@@ -1,4 +1,4 @@
-title: Roger Malina
+title: Roger
 poet:
 url:
 keyword:

@@ -1,4 +1,4 @@
-title: Qin Tina Chen
+title: Tina
 poet:
 url:
 keyword:

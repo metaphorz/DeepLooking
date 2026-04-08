@@ -1,4 +1,4 @@
-title: Abbas Bootwala
+title: Abbas
 poet:
 url:
 keyword:
