@@ -1,4 +1,4 @@
-title: Fatima Siddique
+title: Fatima
 poet:
 url:
 keyword:

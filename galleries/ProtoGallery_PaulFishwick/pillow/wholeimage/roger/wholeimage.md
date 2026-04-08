@@ -1,4 +1,4 @@
-title: Professor Roger Malina
+title: Roger Malina
 poet:
 url:
 keyword:
