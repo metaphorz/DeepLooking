@@ -1,0 +1,8 @@
+{
+  "id": "pillow",
+  "title": "Pillow, Credits: Roger Malina and Qin Tina Chen, Experimental Publishing and Curating.",
+  "image": "pillow.jpeg",
+  "mask": "pillow.jpeg",
+  "imageLenses": ["fatima", "sally", "paul", "arman", "roger", "abbas", "tina"],
+  "segments": []
+}
