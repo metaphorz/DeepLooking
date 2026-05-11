@@ -4,10 +4,8 @@ url:
 keyword:
 loc:
 
-Tribal art, loads of colors.
+The pillow has lots of colors, orange, green, blue, very subtle deep red, black, light lemon yellow/beige. For some square patterns on the pillow under different lights seem to appear like magenta color.
 
-Gives me a sense that the pillow might be from an African country, because they do have such art in Swahili culture.
+The pillow also contains many different shapes like lines, dots, arrows/boomerang shapes. Looking from the top high view, all the colorful stripes and rectangles stay close together to make a pattern, similar to a bar code. The pillowcase fits badly, causing the pattern to sit unevenly. The top band is fully visible on the upper surface, while the bottom band is pulled down, landing between the top face and the side.
 
-Lots of orange which is quite appealing to the eye. Not at all color-blind friendly. The dots and dashes might be some sort of message, morse code. Why are the arrows on the pillow only moving upwards?
-
-The pillow looks a bit old/dirty, colour has faded away. Does the middle band signify a rainbow — is the message something related to rain? Because of the severe shortage of water/drought conditions in the African Peninsula.
+The pattern of triangles, rectangles, lines, and dots is grouped and repeated four times. But if we see it from top to bottom and sort out the pattern, it seems to be: dots and lines (x2) arrows, triangles, and repeat.
