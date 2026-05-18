@@ -1,0 +1,9 @@
+{
+  "id": "sally",
+  "title": "Saigon Notre-Dame Cathedral — Sally",
+  "credit": "An (Sally) Nguyen",
+  "image": "cathedralsaigon.jpg",
+  "mask": "cathedralsaigon.jpg",
+  "imageLenses": ["personal", "history", "mathematics", "architecture"],
+  "segments": []
+}

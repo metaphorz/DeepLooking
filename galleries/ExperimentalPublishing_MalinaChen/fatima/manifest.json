@@ -1,0 +1,16 @@
+{
+  "id": "fatima",
+  "title": "Untold Stories — Fatima Siddique",
+  "credit": "Fatima Siddique",
+  "image": "untoldstories.jpg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": ["history", "crisis", "memory"],
+  "segments": [
+    {
+      "label": "Calligraphy",
+      "dir": "calligraphy",
+      "lenses": ["calligraphy"],
+      "colorRule": { "r_gt": 200, "g_lt": 50, "b_lt": 50 }
+    }
+  ]
+}

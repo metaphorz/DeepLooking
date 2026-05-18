@@ -188,13 +188,14 @@
   }
   /* Gallery styles */
   .gallery {
-    max-width: 900px;
+    max-width: 1200px;
     width: 100%;
   }
   .gallery-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: flex-start;
     gap: 24px;
     margin-top: 20px;
   }
@@ -338,6 +339,13 @@
     font-size: 0.75rem;
     color: #555;
   }
+  .image-credit {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #888;
+  }
+  .image-credit:empty { display: none; }
 </style>
 </head>
 <body>
@@ -381,6 +389,7 @@
     <img src="" id="artwork" alt="">
     <button class="image-lens-btn" id="image-lens-btn">&#9645;</button>
   </div>
+  <p class="image-credit" id="image-credit"></p>
 </div>
 
 <!-- Image/video lightbox overlay -->
@@ -463,6 +472,7 @@ const galleryGrid = document.getElementById('gallery-grid');
 const backBtn = document.getElementById('back-btn');
 const viewerSubtitle = document.getElementById('viewer-subtitle');
 const artworkEl = document.getElementById('artwork');
+const imageCreditEl = document.getElementById('image-credit');
 const maskCanvas = document.getElementById('maskCanvas');
 const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -555,6 +565,7 @@ async function openViewer(manifest, basePath) {
   artworkEl.src = basePath + '/' + manifest.image;
   artworkEl.alt = manifest.title;
   viewerSubtitle.textContent = 'Mouse click in the image to explore \u2014 ' + manifest.title;
+  imageCreditEl.textContent = manifest.credit ? 'Photo: ' + manifest.credit : '';
 
   // Load mask
   const maskImg = new Image();
@@ -785,7 +796,7 @@ function createPopup(lenses, posX, posY) {
   }
 
   // Build tabs
-  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education', math: 'Mathematics', engineering: 'Engineering', science: 'Science', history: 'History', fatima: 'Fatima', sally: 'Sally', paul: 'Paul', arman: 'Arman', roger: 'Roger', abbas: 'Abbas', tina: 'Tina' };
+  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education', math: 'Mathematics', engineering: 'Engineering', science: 'Science', history: 'History', fatima: 'Fatima', sally: 'Sally', paul: 'Paul', arman: 'Arman', roger: 'Roger', abbas: 'Abbas', tina: 'Tina', personalperspective: 'Personal Perspective', typography: 'Graphic Design & Typography', marketing: 'Marketing & Branding', arthistory: 'Art History', museumstudies: 'Museum Studies', calligraphy: 'Calligraphy', crisis: 'Crisis', memory: 'Memory', personal: 'Personal', anthropology: 'Anthropology', visualarts: 'Visual Arts', mathematics: 'Mathematics', architecture: 'Architecture' };
   lenses.forEach((lensObj, i) => {
     const tab = document.createElement('button');
     tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
