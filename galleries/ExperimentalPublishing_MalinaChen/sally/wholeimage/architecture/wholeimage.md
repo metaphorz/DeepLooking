@@ -1,5 +1,5 @@
 title: Architecture
-poet: Sally
+poet: An (Sally) Nguyen
 url: https://www.saigonlocaltour.com/saigon-notre-dame-cathedral-a-timeless-icon-of-architectural-grandeur/
 keyword: Neo-Romanesque, red-brick facade
 loc: NA

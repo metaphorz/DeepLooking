@@ -1,5 +1,5 @@
 title: History
-poet: Sally
+poet: An (Sally) Nguyen
 url: https://www.vietnamtravelsonline.com/travel-blog/saigon-notre-dame-cathedral/
 keyword: French colonial Vietnam
 loc: DS559

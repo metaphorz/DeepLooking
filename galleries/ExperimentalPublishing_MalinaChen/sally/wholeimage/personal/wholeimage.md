@@ -1,5 +1,5 @@
 title: Personal
-poet: Sally
+poet: An (Sally) Nguyen
 url:
 keyword: District 1, Ho Chi Minh City
 loc: B
