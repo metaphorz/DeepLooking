@@ -1,8 +1,9 @@
 {
   "id": "arman",
-  "title": "Brillo Box — Arman Eshtiaghi",
+  "title": "Riparian Creek — Arman Eshtiaghi",
+  "credit": "Arman Eshtiaghi",
   "image": "arman.jpg",
   "mask": "arman.jpg",
-  "imageLenses": ["personalperspective", "typography", "marketing", "arthistory", "museumstudies"],
+  "imageLenses": ["personalperspective", "ecology", "aesthetics", "hydrology", "digitalimaging"],
   "segments": []
 }

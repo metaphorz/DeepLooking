@@ -1,9 +1,9 @@
 title: Personal Perspective
 poet: Arman Eshtiaghi
 url:
-keyword: Personal / Affective Emergence
+keyword: Affective Emergence
 loc: B
 
-The stiff, cubic form of the box creates a unique environment for observation. It is not just a static object; it sparks a reaction where the emotions, perhaps nostalgia or the irony of the mundane, emerge naturally from the interaction. We can view this as a pause in the kinetic rhythm of a factory line, allowing us to witness the liquidity of memory as household brands transition from utility to iconography.
+The hanging branches descend toward the water's surface in this image. This creates a point of tension between static growth and continuous flow. This interaction serves as a practical example of affective emergence, where the feeling of serenity arises from the complex relationship between elements. The liquidity of the water reflects the shifting nature of internal states during this interaction.
 
-Generation Method: Hybrid (Student-led with research context).
+Generation Method: Hybrid.
