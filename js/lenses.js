@@ -9,8 +9,8 @@ const TEXT_MODELS = [
   ['anthropic/claude-opus-5.5', 'Claude Opus 5.5'],
 ];
 const IMAGE_MODELS = [
-  ['google/gemini-3.1-flash-image', 'Nano Banana 2'],
   ['google/gemini-3-pro-image', 'Nano Banana Pro'],
+  ['google/gemini-3.1-flash-image', 'Nano Banana 2'],
   ['openai/gpt-5-image-mini', 'GPT-5 Image Mini'],
 ];
 const DEFAULT_LEVEL = '9th or 10th grade';
