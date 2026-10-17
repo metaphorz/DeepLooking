@@ -83,11 +83,9 @@ function renderReview(sub, fileName, problems, tabs) {
 
   const dl = el('dl');
   const row = (k, v) => { if (v) { dl.appendChild(el('dt', k)); dl.appendChild(el('dd', v)); } };
-  const g = info.gallery || {};
   row('File', fileName);
   row('Title', m.title);
   row('Contributor', info.contributor || m.credit);
-  row('Suggested gallery', g.new ? 'New gallery: ' + g.name + (g.author ? ' \u2014 ' + g.author : '') : (g.name || g.id));
   row('Lens profile', info.profile ? info.profile.name + ' (' + (info.profile.lenses || []).join(', ') + ')' : '');
   row('About the image', info.about);
   row('Created', info.created ? new Date(info.created).toLocaleString() : '');
@@ -126,10 +124,10 @@ function renderReview(sub, fileName, problems, tabs) {
     const o = el('option', gal.name + ' \u2014 ' + gal.author); o.value = gal.id; sel.appendChild(o);
   }
   const newOpt = el('option', 'New gallery\u2026'); newOpt.value = '__new'; sel.appendChild(newOpt);
-  sel.value = g.new ? '__new' : (galleriesList.some(x => x.id === g.id) ? g.id : galleriesList[0]?.id);
+  sel.value = galleriesList[0]?.id || '__new';
   const idIn = el('input'); idIn.value = m.id || ''; idIn.size = 18;
-  const nameIn = el('input'); nameIn.value = g.new ? g.name || '' : ''; nameIn.placeholder = 'Gallery name';
-  const authorIn = el('input'); authorIn.value = g.new ? g.author || '' : ''; authorIn.placeholder = 'Author(s)';
+  const nameIn = el('input'); nameIn.placeholder = 'Gallery name';
+  const authorIn = el('input'); authorIn.placeholder = 'Author(s)';
   const folderIn = el('input'); folderIn.placeholder = 'Folder'; folderIn.size = 28;
   const newBox = el('p');
   newBox.append('Name ', nameIn, '  Author ', authorIn, '  Folder ', folderIn);

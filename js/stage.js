@@ -32,7 +32,7 @@ function freshState() {
     wholeTabs: [],
     generated: false,
     models: { seg: SEG_MODELS[0][0], text: TEXT_MODELS[0][0], image: IMAGE_MODELS[0][0] },
-    ex: { title: '', credit: '', gallery: '', newName: '', newAuthor: '', notes: '' },
+    ex: { title: '', credit: '', notes: '' },
     sel: { target: 0, tab: 0 },
   };
 }
@@ -691,21 +691,12 @@ async function addLens(t, name, mode) {
 
 // ------------------------------------------------------------- 4. export ---
 
-let galleries = [];
-fetch('galleries.json').then(r => r.json()).then(g => { galleries = g; renderExport(); }).catch(() => renderExport());
-
+// The curator chooses the gallery when reviewing, so the ZIP carries no gallery choice.
 const bindEx = (id, key) => $(id).addEventListener('input', e => { S.ex[key] = e.target.value; renderProblems(); save(); });
-bindEx('exTitle', 'title'); bindEx('exCredit', 'credit'); bindEx('exNewName', 'newName');
-bindEx('exNewAuthor', 'newAuthor'); bindEx('exNotes', 'notes');
-$('exGallery').addEventListener('change', e => { S.ex.gallery = e.target.value; renderExport(); renderProblems(); save(); });
+bindEx('exTitle', 'title'); bindEx('exCredit', 'credit'); bindEx('exNotes', 'notes');
 
 function renderExport() {
-  const sel = $('exGallery');
-  sel.replaceChildren(new Option('Choose…', ''), ...galleries.map(g => new Option(`${g.name} (${g.author})`, g.id)), new Option('New gallery…', '__new'));
-  sel.value = S.ex.gallery;
-  $('newGalleryName').hidden = $('newGalleryAuthor').hidden = S.ex.gallery !== '__new';
-  $('exTitle').value = S.ex.title; $('exCredit').value = S.ex.credit;
-  $('exNewName').value = S.ex.newName; $('exNewAuthor').value = S.ex.newAuthor; $('exNotes').value = S.ex.notes;
+  $('exTitle').value = S.ex.title; $('exCredit').value = S.ex.credit; $('exNotes').value = S.ex.notes;
 }
 
 // Folder name in the gallery: from the title's first words, else the file name.
@@ -719,8 +710,6 @@ function problems() {
   if (!S.seg?.segments.length) return ['Segment the image first.'];
   if (!S.ex.title.trim()) p.push('Add a title.');
   if (!S.ex.credit.trim()) p.push('Add your name.');
-  if (!S.ex.gallery) p.push('Choose a gallery to suggest (or "New gallery…").');
-  if (S.ex.gallery === '__new' && !S.ex.newName.trim()) p.push('Name the new gallery.');
   const all = [...S.seg.segments.map(s => [s.label, s.tabs]), ['Whole image', S.wholeTabs]];
   if (!all.some(([, tabs]) => tabs.length)) p.push('There are no tabs yet.');
   for (const [label, tabs] of all) for (const t of tabs) if (!t.text.trim()) p.push(`${label} / ${t.name} has no text yet.`);
@@ -750,8 +739,6 @@ $('exportBtn').addEventListener('click', async () => {
       submission: {
         tool: 'Deep Looking Stage', format: 1, created: new Date().toISOString(),
         contributor: S.ex.credit.trim(),
-        gallery: S.ex.gallery === '__new' ? { new: true, name: S.ex.newName.trim(), author: S.ex.newAuthor.trim() || S.ex.credit.trim() }
-                                          : { id: S.ex.gallery, name: galleries.find(g => g.id === S.ex.gallery)?.name || '' },
         notes: S.ex.notes.trim(),
         profile: { kind: S.profile.kind, name: PROFILES[S.profile.kind].name, lenses: lenses.map(l => l.name),
                    science: S.profile.science || undefined, art: S.profile.art || undefined },
@@ -821,9 +808,7 @@ async function loadZip(f) {
     generated: true,
     profile: { ...freshState().profile, kind, modes: {}, science: info.profile?.science || '', art: info.profile?.art || '',
                about: info.about || '', level: info.level || DEFAULT_LEVEL, whole: (m.imageLenses || []).length > 0 },
-    ex: { title: m.title || '', credit: m.credit || info.contributor || '',
-          gallery: info.gallery?.new ? '__new' : (info.gallery?.id || ''), newName: info.gallery?.new ? info.gallery.name : '',
-          newAuthor: info.gallery?.new ? info.gallery.author : '', notes: info.notes || '' },
+    ex: { title: m.title || '', credit: m.credit || info.contributor || '', notes: info.notes || '' },
   });
   if (info.models?.text) S.models.text = info.models.text;
   if (info.models?.image) S.models.image = info.models.image;

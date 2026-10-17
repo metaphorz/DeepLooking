@@ -147,7 +147,6 @@ def main():
     print(f"Submission: {m.get('title')}  (id {m.get('id')})")
     if sub:
         print(f"  from {sub.get('contributor', '?')}, created {sub.get('created', '?')}")
-        print(f"  suggested gallery: {sub.get('gallery')}")
     for w in warnings:
         print("  warning:", w)
     for e in errors:
