@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Looking Stage</title>
+<link rel="stylesheet" href="css/viewer-core.css">
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70;
+    --line: #e2e0db; --accent: #2b59c3; --accent-ink: #fff; --warn: #9a5b00; --err: #b3261e; --ok: #1e7a3a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151517; --panel: #1f1f22; --ink: #ececef; --muted: #9a9aa2;
+      --line: #34343a; --accent: #6d8fe8; --accent-ink: #0e0e10; --warn: #e0a24a; --err: #f08a80; --ok: #6fcf8a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 1400px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 12px; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: -0.01em; }
+  header p { margin: 4px 0 20px; color: var(--muted); max-width: 760px; }
+  header a { color: var(--accent); }
+  .keybar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+  .keybar .chip { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+  .keybar .chip.ok { color: var(--ok); }
+  .keybar .chip.no { color: var(--err); }
+
+  .banner { background: var(--panel); border: 1px solid var(--accent); border-radius: 12px; padding: 10px 14px;
+            margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .banner[hidden] { display: none; }
+
+  section.step { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+  section.step > h2 { margin: 0 0 4px; font-size: 18px; }
+  section.step > p.lead { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  section.step.locked { opacity: .55; }
+  section.step.locked .body { pointer-events: none; }
+
+  #drop { border: 2px dashed var(--line); border-radius: 12px; background: var(--bg);
+          padding: 28px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  #drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+  #drop img { max-height: 220px; max-width: 100%; border-radius: 6px; display: block; margin: 0 auto 10px; }
+  #drop .hint { color: var(--muted); }
+  #drop .name { font-weight: 600; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; margin: 16px 0; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  label.field.grow { flex: 1 1 260px; }
+  .include { margin-top: 14px; }
+  textarea, input[type=text], input[type=password] {
+    font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px; width: 100%; }
+  textarea { resize: vertical; }
+  select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+           border-radius: 8px; padding: 7px 10px; max-width: 100%; }
+  button { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--panel);
+           color: var(--ink); padding: 7px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+                   font-weight: 700; letter-spacing: .06em; padding: 10px 26px; }
+  button.small { padding: 3px 9px; font-size: 13px; }
+  button.link { border: none; background: none; color: var(--accent); padding: 0; text-decoration: underline; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .status { min-height: 1.5em; color: var(--muted); }
+  .status.err { color: var(--err); white-space: pre-wrap; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+  .card h3 { font-size: 14px; margin: 0 0 8px; color: var(--muted); font-weight: 600;
+             display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .stage { position: relative; line-height: 0; }
+  .stage img, .stage canvas { width: 100%; height: auto; display: block; border-radius: 6px; }
+  .stage canvas, .stage .overlay { position: absolute; inset: 0; pointer-events: none; }
+  .stage .overlay { width: 100%; height: 100%; opacity: 0; image-rendering: pixelated; }
+  #hoverStage { cursor: crosshair; }
+  #tip { position: fixed; pointer-events: none; z-index: 10; display: none; background: rgba(20,20,22,.92);
+         color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: 600;
+         white-space: nowrap; align-items: center; gap: 8px; }
+  #tip .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,.5); }
+  .slider { display: flex; align-items: center; gap: 8px; font-weight: 400; font-size: 13px; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  tr.hot td { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  td input[type=text] { padding: 4px 8px; min-width: 160px; }
+  .sw-cell { display: inline-block; width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--line); vertical-align: middle; }
+  code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .meta { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+  .notes { color: var(--warn); font-size: 13px; margin: 8px 0 0; padding-left: 18px; }
+  details { margin-top: 12px; }
+  details pre { white-space: pre-wrap; font: 12.5px ui-monospace, Menlo, monospace; background: var(--bg);
+                padding: 10px; border-radius: 8px; max-height: 320px; overflow: auto; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line);
+             border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite;
+             vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Profiles */
+  .profiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 760px) { .profiles { grid-template-columns: 1fr; } }
+  .profile { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: block; }
+  .profile:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+  .profile b { display: block; }
+  .profile span { color: var(--muted); font-size: 13px; }
+  .profile input { margin-right: 6px; }
+  .pane { margin-top: 12px; }
+  .pane[hidden] { display: none; }
+  .lens-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .lens-row input[type=text] { max-width: 280px; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+
+  /* Preview & refine */
+  .refine { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .refine { grid-template-columns: 1fr; } }
+  .dl-viewer { background: #1a1a2e; border-radius: 12px; padding: 12px; color: #e0e0e0; font-family: Georgia, serif; }
+  .dl-viewer .hint { color: #888; font-size: 13px; margin: 0 0 8px; }
+  .dl-viewer .frame { position: relative; display: block; cursor: crosshair; line-height: 0; }
+  .dl-viewer .frame img { width: 100%; height: auto; display: block; }
+  .dl-viewer .image-lens-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 24px; border-radius: 4px;
+    border: 1px solid rgba(196,163,90,0.6); background: rgba(26,26,46,0.8); color: #c4a35a; font-size: 1.2rem;
+    cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; line-height: 1; padding: 0; }
+  .targets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .targets button.on, .tabchips button.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); font-weight: 600; }
+  .tabchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; align-items: center; }
+  .tabchips .badge { font-size: 11px; color: var(--muted); margin-left: 4px; }
+  .tabchips .empty { color: var(--warn); }
+  .editor .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  @media (max-width: 560px) { .editor .row { grid-template-columns: 1fr; } }
+  .editor label.field { margin-bottom: 8px; }
+  .editor textarea { min-height: 170px; }
+  .imgbox { display: flex; gap: 12px; align-items: start; margin: 4px 0 10px; flex-wrap: wrap; }
+  .imgbox img { width: 140px; height: 100px; object-fit: contain; background: var(--bg); border-radius: 6px; border: 1px solid var(--line); }
+  .imgbox .noimg { width: 140px; height: 100px; display: flex; align-items: center; justify-content: center;
+                   color: var(--muted); font-size: 12px; background: var(--bg); border-radius: 6px; border: 1px dashed var(--line); }
+  .imgbox .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .imgbox .src { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .revise { display: flex; gap: 8px; margin-top: 6px; }
+  .who { font-size: 12px; color: var(--muted); }
+  .problems { color: var(--warn); font-size: 14px; padding-left: 18px; }
+  .problems li.ok { color: var(--ok); list-style: none; margin-left: -18px; }
+
+  dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); max-width: 520px; width: calc(100% - 32px); }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  dialog h2 { margin-top: 0; font-size: 18px; }
+  dialog .actions { display: flex; gap: 8px; justify-content: end; margin-top: 14px; flex-wrap: wrap; }
+  dialog p { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Deep Looking Stage</h1>
+      <p>Prepare an image for a Deep Looking gallery: segment it, choose lenses, refine the tabs,
+         then export a ZIP to send to the gallery curator. Runs in your browser with your own
+         <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> key.
+         <a href="index.html">&larr; Galleries</a></p>
+    </div>
+    <div class="keybar">
+      <span id="keyChip" class="chip no">No key</span>
+      <span id="spent" class="chip" hidden></span>
+      <button id="keyBtn">Enter OpenRouter key</button>
+      <button id="openZipBtn" title="Continue editing a ZIP exported from this page">Open ZIP…</button>
+      <input id="zipFile" type="file" accept=".zip,application/zip" hidden>
+    </div>
+  </header>
+
+  <div class="banner" id="resume" hidden>
+    <span id="resumeText"></span>
+    <button id="resumeBtn" class="small">Resume</button>
+    <button id="discardBtn" class="small">Start over</button>
+  </div>
+
+  <!-- 1. Segment -->
+  <section class="step" id="step1">
+    <h2>1 · Segment</h2>
+    <p class="lead">Drop an image, press SEGMENT, then hover to check the labels. Rename, delete or name segments in the table.</p>
+    <div class="body">
+      <div id="drop" tabindex="0">
+        <div id="dropInner"><div class="hint">Drag &amp; drop an image here, click to choose a file, or paste from the clipboard</div></div>
+        <input id="file" type="file" accept="image/*" hidden>
+      </div>
+      <label class="field include">Also include these as segments (optional), one per line or comma-separated
+        <textarea id="include" rows="2" placeholder="e.g. cruise ships, red barn, kayakers"></textarea>
+      </label>
+      <div class="controls">
+        <label class="field">Model <select id="segModel"></select></label>
+        <button id="segBtn" class="primary" disabled>SEGMENT</button>
+        <div class="status" id="segStatus"></div>
+      </div>
+
+      <div id="segResults" hidden>
+        <div class="grid">
+          <div class="card">
+            <h3>Original: hover to identify segments
+              <span class="slider">Map overlay <input id="opacity" type="range" min="0" max="100" value="0"></span>
+            </h3>
+            <div class="stage" id="hoverStage">
+              <img id="origImg" alt="Original image">
+              <img id="overlayImg" class="overlay" alt="">
+              <canvas id="hl"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Segmentation map <button id="rawBtn" class="small link">Raw model map</button></h3>
+            <div class="stage"><img id="maskImg" alt="Segmentation map"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Segments</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>Label</th><th>Color</th><th>colorRule</th><th class="num">Coverage</th><th></th></tr></thead>
+              <tbody id="segRows"></tbody>
+            </table>
+          </div>
+          <ul class="notes" id="segNotes"></ul>
+          <p class="meta" id="segMeta"></p>
+          <details><summary>Prompt sent to the model</summary><pre id="promptText"></pre></details>
+          <details><summary>Model response text</summary><pre id="rawText"></pre></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Lenses -->
+  <section class="step locked" id="step2">
+    <h2>2 · Lenses</h2>
+    <p class="lead">Choose a lens profile. Each segment, and the image as a whole, gets one tab per lens.</p>
+    <div class="body">
+      <div class="profiles" id="profiles"></div>
+
+      <div class="pane" id="pane-scienceart" hidden>
+        <div class="controls" style="margin:0">
+          <label class="field grow">Which science? (leave blank to let the AI pick the best fit for each segment)
+            <input type="text" id="prefScience" placeholder="e.g. Botany, Geology, Physics">
+          </label>
+          <label class="field grow">Which kind of art? (leave blank to let the AI pick)
+            <input type="text" id="prefArt" placeholder="e.g. Impressionist painting, Architecture, Poetry">
+          </label>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-modes">
+        <p class="meta" style="margin:0 0 6px">For each lens, let the AI draft it or write it yourself. You can edit every tab afterwards either way.</p>
+        <div id="lensModes"></div>
+      </div>
+
+      <div class="pane" id="pane-user" hidden>
+        <div id="userLenses"></div>
+        <button id="addUserLens" class="small">+ Add lens</button>
+        <p class="meta">For each lens, let the AI draft it or write it yourself. Tip: add a lens called "Personal", set it to "I'll write it", and share your own reflection on the image.</p>
+      </div>
+
+      <div class="controls">
+        <label class="field grow">About this image (optional): where, when, why it matters to you
+          <input type="text" id="about" placeholder="e.g. Salt marsh at Amelia Island, Florida, at low tide">
+        </label>
+        <label class="field">Reading level <input type="text" id="level" style="width:180px"></label>
+      </div>
+      <div class="controls">
+        <label class="check"><input type="checkbox" id="wholeOn" checked> Also make whole-image tabs</label>
+        <label class="field">Text model <select id="textModel"></select></label>
+        <label class="field">Image model (for "Generate image") <select id="imageModel"></select></label>
+        <button id="genBtn" class="primary">GENERATE TABS</button>
+        <div class="status" id="genStatus"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Preview & refine -->
+  <section class="step locked" id="step3">
+    <h2>3 · Preview &amp; refine</h2>
+    <p class="lead">This is how visitors will see it. Hover for labels, click a segment for its tabs. Edit any tab on the right; changes show the next time you open the popup.</p>
+    <div class="body refine">
+      <div class="dl-viewer">
+        <p class="hint">Mouse click in the image to explore</p>
+        <div class="frame" id="pvFrame">
+          <img id="pvImg" alt="">
+          <button class="image-lens-btn" id="pvWhole" title="Whole image">&#9645;</button>
+        </div>
+      </div>
+      <div class="editor">
+        <div class="targets" id="targets"></div>
+        <div class="tabchips" id="tabchips"></div>
+        <div id="tabEditor"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Export -->
+  <section class="step locked" id="step4">
+    <h2>4 · Export</h2>
+    <p class="lead">Download a ZIP and send it to the gallery curator, who reviews it before adding it to a gallery.</p>
+    <div class="body">
+      <div class="controls" style="margin-top:0">
+        <label class="field grow">Title shown in the gallery
+          <input type="text" id="exTitle" placeholder="e.g. Salt Marsh at Dawn, Photograph by Jane Doe">
+        </label>
+        <label class="field grow">Your name (credit and byline)
+          <input type="text" id="exCredit" placeholder="e.g. Jane Doe">
+        </label>
+      </div>
+      <div class="controls">
+        <label class="field">Suggested gallery <select id="exGallery"></select></label>
+        <label class="field grow" id="newGalleryName" hidden>New gallery name <input type="text" id="exNewName"></label>
+        <label class="field grow" id="newGalleryAuthor" hidden>New gallery author(s) <input type="text" id="exNewAuthor"></label>
+      </div>
+      <label class="field">Note to the curator (optional)
+        <textarea id="exNotes" rows="2"></textarea>
+      </label>
+      <ul class="problems" id="problems"></ul>
+      <div class="controls">
+        <button id="exportBtn" class="primary">EXPORT ZIP</button>
+        <div class="status" id="exStatus"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="tip"><span class="sw"></span><span class="txt"></span></div>
+
+<dialog id="keyDialog">
+  <form method="dialog">
+    <h2>OpenRouter key</h2>
+    <p>Each person uses their own key; the calls are billed to your OpenRouter account.
+       The key stays in this browser and is sent only to openrouter.ai.
+       Get one at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>.</p>
+    <label class="field">Key <input type="password" id="keyInput" autocomplete="off" placeholder="sk-or-…"></label>
+    <label class="check" style="margin-top:8px"><input type="checkbox" id="keyRemember"> Remember on this device</label>
+    <div class="actions">
+      <button type="button" id="signInBtn">Sign in with OpenRouter instead</button>
+      <button type="button" id="forgetBtn">Forget key</button>
+      <button value="cancel">Cancel</button>
+      <button value="save" class="primary" id="keySave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="js/viewer-core.js"></script>
+<script src="js/openrouter.js"></script>
+<script src="js/segment.js"></script>
+<script src="js/lenses.js"></script>
+<script src="js/submission.js"></script>
+<script src="js/stage.js"></script>
+</body>
+</html>

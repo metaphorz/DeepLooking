@@ -38,154 +38,6 @@
     max-width: 95vw;
     max-height: 80vh;
   }
-  .popup {
-    position: fixed;
-    background: rgba(26, 26, 46, 0.97);
-    border: 1px solid #c4a35a;
-    border-radius: 10px;
-    padding: 16px;
-    color: #e0e0e0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 100;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-  }
-  .popup.visible { opacity: 1; }
-  .popup.pinned {
-    pointer-events: auto;
-    overflow: hidden;
-    max-height: 33vh;
-    min-width: 280px;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-    cursor: grab;
-    display: flex;
-    flex-direction: column;
-  }
-  .popup-content {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-  }
-  .popup-resize {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    z-index: 10;
-    touch-action: none;
-  }
-  .popup-resize.nw { top: 0; left: 0; cursor: nw-resize; }
-  .popup-resize.ne { top: 0; right: 0; cursor: ne-resize; }
-  .popup-resize.sw { bottom: 0; left: 0; cursor: sw-resize; }
-  .popup-resize.se { bottom: 0; right: 0; cursor: se-resize; }
-  .popup.pinned .lens-tabs {
-    cursor: grab;
-    touch-action: none;
-  }
-  .popup.dragging .lens-tabs {
-    cursor: grabbing;
-  }
-  .popup-close {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    font-size: 1.3rem;
-    color: #999;
-    cursor: pointer;
-    display: none;
-    line-height: 1;
-  }
-  .popup-close:hover { color: #fff; }
-  .popup-close:focus { outline: none; }
-  .popup.pinned .popup-close { display: block; }
-  .popup .poem-title a {
-    color: #c4a35a;
-    text-decoration: none;
-  }
-  .popup .poem-title a:hover {
-    text-decoration: underline;
-  }
-  .popup .lens-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 10px;
-    border-bottom: 1px solid rgba(196,163,90,0.3);
-  }
-  .popup .lens-tab {
-    padding: 5px 12px;
-    font-size: 0.75rem;
-    font-family: 'Georgia', serif;
-    color: #888;
-    cursor: pointer;
-    border: 1px solid transparent;
-    border-bottom: none;
-    border-radius: 6px 6px 0 0;
-    background: none;
-    transition: color 0.2s, background 0.2s;
-    text-transform: capitalize;
-    white-space: nowrap;
-  }
-  .popup .lens-tab:focus { outline: none; }
-  .popup .lens-tab:hover {
-    color: #c4a35a;
-  }
-  .popup .lens-tab.active {
-    color: #c4a35a;
-    background: rgba(196,163,90,0.1);
-    border-color: rgba(196,163,90,0.3);
-  }
-  .popup.pinned .poem-title,
-  .popup.pinned .poem-poet,
-  .popup.pinned .poem-text,
-  .popup.pinned .poem-image,
-  .popup.pinned .poem-video {
-    cursor: default;
-  }
-  .popup .poem-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #c4a35a;
-    margin-bottom: 2px;
-  }
-  .popup .poem-poet {
-    font-size: 0.8rem;
-    color: #999;
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-  .popup .poem-image, .popup .poem-video {
-    width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border-radius: 6px;
-    margin-bottom: 10px;
-  }
-  .image-lightbox {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    cursor: none;
-  }
-  .image-lightbox img {
-    max-width: 90vw;
-    max-height: 90vh;
-    border-radius: 8px;
-    box-shadow: 0 0 40px rgba(0,0,0,0.8);
-  }
-  .popup .poem-text {
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: #d0d0d0;
-    white-space: pre-line;
-  }
   /* Gallery styles */
   .gallery {
     max-width: 1200px;
@@ -277,18 +129,6 @@
     background: rgba(196,163,90,0.2);
     border-color: #c4a35a;
   }
-  .segment-tooltip {
-    position: fixed;
-    background: rgba(26, 26, 46, 0.9);
-    border: 1px solid rgba(196,163,90,0.5);
-    border-radius: 4px;
-    padding: 3px 8px;
-    color: #c4a35a;
-    font-size: 0.75rem;
-    pointer-events: none;
-    z-index: 90;
-    white-space: nowrap;
-  }
   h1 a {
     color: #c4a35a;
     text-decoration: none;
@@ -346,7 +186,35 @@
     color: #888;
   }
   .image-credit:empty { display: none; }
+  .review-panel {
+    margin-top: 18px;
+    max-width: 760px;
+    border: 1px solid rgba(196,163,90,0.5);
+    border-radius: 10px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .review-panel h2 { color: #c4a35a; font-weight: 300; letter-spacing: 0.08em; font-size: 1.1rem; margin-bottom: 8px; }
+  .review-panel h3 { color: #c4a35a; font-weight: 400; font-size: 0.95rem; margin: 14px 0 4px; }
+  .review-panel dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; }
+  .review-panel dt { color: #888; }
+  .review-panel ul { padding-left: 20px; }
+  .review-panel .problem { color: #e8913a; }
+  .review-panel .ok { color: #7fbf7f; list-style: none; margin-left: -20px; }
+  .review-panel select, .review-panel input {
+    background: #1a1a2e; color: #e0e0e0; border: 1px solid rgba(196,163,90,0.5);
+    border-radius: 6px; padding: 4px 8px; font-family: Georgia, serif; font-size: 0.85rem;
+  }
+  .review-panel pre {
+    background: #10101e; border: 1px solid #333; border-radius: 6px; padding: 8px 10px;
+    white-space: pre-wrap; word-break: break-all; font-size: 0.8rem; margin: 6px 0;
+  }
+  .review-panel a { color: #c4a35a; }
+  .review-panel .muted { color: #888; font-size: 0.8rem; }
 </style>
+<link rel="stylesheet" href="css/viewer-core.css">
 </head>
 <body>
 
@@ -378,6 +246,12 @@
     "></select>
   </div>
   <p class="subtitle" style="text-align:center" id="gallery-subtitle">Select an image to explore</p>
+  <p class="subtitle" style="text-align:center; margin-top:-12px;">
+    <a href="stage.html" style="color:#c4a35a;">Stage your own image &rarr;</a>
+    &nbsp;&middot;&nbsp;
+    <a id="review-link" href="#" style="color:#888;" title="Curators: open a ZIP from the staging page to review it">Review a submission (ZIP)</a>
+    <input type="file" id="review-file" accept=".zip,application/zip" hidden>
+  </p>
   <div class="gallery-grid" id="gallery-grid"></div>
 </div>
 
@@ -390,80 +264,14 @@
     <button class="image-lens-btn" id="image-lens-btn">&#9645;</button>
   </div>
   <p class="image-credit" id="image-credit"></p>
-</div>
-
-<!-- Image/video lightbox overlay -->
-<div class="image-lightbox" id="lightbox" style="display:none;">
-  <img id="lightbox-img" src="" alt="">
-  <video id="lightbox-video" autoplay loop muted style="display:none; max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 40px rgba(0,0,0,0.8);"></video>
+  <div class="review-panel hidden" id="review-panel"></div>
 </div>
 
 <!-- Hidden canvas for reading segmentation mask pixels -->
 <canvas id="maskCanvas" style="display:none;"></canvas>
 
+<script src="js/viewer-core.js"></script>
 <script>
-// --- Parse a markdown file with key: value front-matter + body text ---
-function parsePoemMarkdown(text) {
-  const lines = text.split('\n');
-  const meta = {};
-  let bodyStart = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.trim() === '') {
-      bodyStart = i + 1;
-      break;
-    }
-    const colon = line.indexOf(':');
-    if (colon > 0) {
-      const key = line.substring(0, colon).trim();
-      const val = line.substring(colon + 1).trim();
-      meta[key] = val;
-    }
-  }
-  meta.text = lines.slice(bodyStart).join('\n').trim();
-  return meta;
-}
-
-// --- Build a getLabel function from manifest colorRules ---
-function buildGetLabel(segments) {
-  return function(r, g, b) {
-    for (const seg of segments) {
-      const rule = seg.colorRule;
-      let match = true;
-      if (rule.r_gt !== undefined && !(r > rule.r_gt)) match = false;
-      if (rule.r_lt !== undefined && !(r < rule.r_lt)) match = false;
-      if (rule.g_gt !== undefined && !(g > rule.g_gt)) match = false;
-      if (rule.g_lt !== undefined && !(g < rule.g_lt)) match = false;
-      if (rule.b_gt !== undefined && !(b > rule.b_gt)) match = false;
-      if (rule.b_lt !== undefined && !(b < rule.b_lt)) match = false;
-      if (match) return seg.label;
-    }
-    return null;
-  };
-}
-
-// --- Highlight keyword in poem text using DOM (safe, no innerHTML) ---
-function setHighlightedText(container, text, keyword) {
-  container.textContent = '';
-  if (!keyword) {
-    container.textContent = text;
-    return;
-  }
-  const regex = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-  const parts = text.split(regex);
-  for (const part of parts) {
-    if (regex.test(part)) {
-      regex.lastIndex = 0;
-      const span = document.createElement('span');
-      span.style.color = '#e8913a';
-      span.style.fontWeight = '600';
-      span.textContent = part;
-      container.appendChild(span);
-    } else {
-      container.appendChild(document.createTextNode(part));
-    }
-  }
-}
 
 // --- DOM references ---
 const galleryScreen = document.getElementById('gallery-screen');
@@ -485,7 +293,6 @@ let activeLensData = null;  // label -> [{lens, title, poet, url, image, keyword
 let activeImageLensData = null;  // [{lens, title, poet, url, image, video, keyword, text}, ...]
 let activeGetLabel = null;
 let activeBasePath = null;
-let openPopups = [];  // track all open popup elements
 
 // --- Segment/region tooltip ---
 const tooltip = document.createElement('div');
@@ -558,11 +365,23 @@ async function loadGalleryImages(galleryId) {
 }
 
 // --- Open viewer for a given gallery item ---
-async function openViewer(manifest, basePath) {
+// --- Where a viewer's files come from: the site (default) or a submission ZIP under review ---
+function siteFiles(basePath) {
+  const cb = '?t=' + Date.now();
+  return {
+    url: p => basePath + '/' + p,
+    text: async p => {
+      const resp = await fetch(basePath + '/' + p + cb);
+      return resp.ok ? resp.text() : null;
+    }
+  };
+}
+
+async function openViewer(manifest, basePath, files = siteFiles(basePath)) {
   activeBasePath = basePath;
   activeGetLabel = buildGetLabel(manifest.segments);
 
-  artworkEl.src = basePath + '/' + manifest.image;
+  artworkEl.src = files.url(manifest.image);
   artworkEl.alt = manifest.title;
   viewerSubtitle.textContent = 'Mouse click in the image to explore \u2014 ' + manifest.title;
   imageCreditEl.textContent = manifest.credit ? 'Photo: ' + manifest.credit : '';
@@ -574,27 +393,27 @@ async function openViewer(manifest, basePath) {
     maskCanvas.height = maskImg.height;
     maskCtx.drawImage(maskImg, 0, 0);
   };
-  maskImg.src = basePath + '/' + manifest.mask;
+  maskImg.src = files.url(manifest.mask);
 
   // Load lens data from markdown files for each segment
   const lensData = {};
-  const cb = '?t=' + Date.now();
   for (const seg of manifest.segments) {
     const lenses = [];
     for (const lens of seg.lenses) {
-      const mdPath = basePath + '/' + seg.dir + '/' + lens + '/' + seg.dir + '.md';
+      const lensDir = seg.dir + '/' + lens;
+      const mdPath = lensDir + '/' + seg.dir + '.md';
       try {
-        const resp = await fetch(mdPath + cb);
-        if (resp.ok) {
-          const text = await resp.text();
+        const text = await files.text(mdPath);
+        if (text !== null) {
           const meta = parsePoemMarkdown(text);
           lenses.push({
             lens: lens,
+            name: meta.tab || '',
             title: meta.title,
             poet: meta.poet,
             url: meta.url,
-            image: meta.image ? basePath + '/' + seg.dir + '/' + lens + '/' + meta.image : '',
-            video: meta.video ? basePath + '/' + seg.dir + '/' + lens + '/' + meta.video : '',
+            image: meta.image ? files.url(lensDir + '/' + meta.image) : '',
+            video: meta.video ? files.url(lensDir + '/' + meta.video) : '',
             youtube: meta.youtube || '',
             keyword: meta.keyword,
             text: meta.text,
@@ -615,20 +434,20 @@ async function openViewer(manifest, basePath) {
   activeImageLensData = [];
   if (manifest.imageLenses && manifest.imageLenses.length > 0) {
     for (const lens of manifest.imageLenses) {
-      const lensDir = basePath + '/wholeimage/' + lens;
+      const lensDir = 'wholeimage/' + lens;
       const mdPath = lensDir + '/wholeimage.md';
       try {
-        const resp = await fetch(mdPath + cb);
-        if (resp.ok) {
-          const text = await resp.text();
+        const text = await files.text(mdPath);
+        if (text !== null) {
           const meta = parsePoemMarkdown(text);
           activeImageLensData.push({
             lens: lens,
+            name: meta.tab || '',
             title: meta.title,
             poet: meta.poet,
             url: meta.url,
-            image: meta.image ? lensDir + '/' + meta.image : '',
-            video: meta.video ? lensDir + '/' + meta.video : '',
+            image: meta.image ? files.url(lensDir + '/' + meta.image) : '',
+            video: meta.video ? files.url(lensDir + '/' + meta.video) : '',
             youtube: meta.youtube || '',
             keyword: meta.keyword,
             text: meta.text,
@@ -663,7 +482,7 @@ imageLensBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (!activeImageLensData || activeImageLensData.length === 0) return;
   const btnRect = imageLensBtn.getBoundingClientRect();
-  createPopup(activeImageLensData, btnRect.left - 310, btnRect.bottom + 8);
+  createPopup(activeImageLensData, btnRect.left - 310, btnRect.bottom + 8, viewerScreen);
 });
 
 // --- Back to gallery ---
@@ -671,275 +490,12 @@ backBtn.addEventListener('click', () => {
   viewerScreen.classList.add('hidden');
   galleryScreen.classList.remove('hidden');
   // Remove all open popups and tooltip
-  openPopups.forEach(p => p.remove());
-  openPopups = [];
+  closeAllPopups();
+  endReview();
   imageLensBtn.style.display = 'none';
   if (document.querySelector('.segment-tooltip')) document.querySelector('.segment-tooltip').style.display = 'none';
 });
 
-// --- Lightbox references ---
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxVideo = document.getElementById('lightbox-video');
-
-// --- Click or ESC to dismiss lightbox ---
-lightbox.addEventListener('click', () => {
-  lightbox.style.display = 'none';
-  lightboxVideo.src = '';
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && lightbox.style.display === 'flex') {
-    lightbox.style.display = 'none';
-    lightboxVideo.src = '';
-  }
-});
-
-// --- Create a new popup for given lenses at position ---
-function createPopup(lenses, posX, posY) {
-  const el = document.createElement('div');
-  el.className = 'popup visible pinned';
-  el.style.position = 'fixed';
-  el.style.zIndex = 100 + openPopups.length;
-
-  // Build inner structure using DOM methods
-  const closeBtn = document.createElement('span');
-  closeBtn.className = 'popup-close';
-  closeBtn.style.display = 'block';
-  closeBtn.textContent = '\u00D7';
-  const tabs = document.createElement('div');
-  tabs.className = 'lens-tabs';
-  tabs.style.display = 'flex';
-  const titleEl = document.createElement('div');
-  titleEl.className = 'poem-title';
-  const poetEl = document.createElement('div');
-  poetEl.className = 'poem-poet';
-  const imgEl = document.createElement('img');
-  imgEl.className = 'poem-image';
-  imgEl.style.display = 'none';
-  const vidEl = document.createElement('video');
-  vidEl.className = 'poem-video';
-  vidEl.controls = true; vidEl.autoplay = true; vidEl.loop = true; vidEl.muted = true;
-  vidEl.style.display = 'none';
-  const ytEl = document.createElement('iframe');
-  ytEl.className = 'poem-video';
-  ytEl.style.display = 'none';
-  ytEl.style.border = 'none';
-  ytEl.style.width = '100%';
-  ytEl.style.aspectRatio = '16/9';
-  ytEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-  ytEl.allowFullscreen = true;
-  const textEl = document.createElement('div');
-  textEl.className = 'poem-text';
-  const locEl = document.createElement('div');
-  locEl.style.cssText = 'margin-top:10px;font-size:0.7rem;color:#777;font-style:italic;';
-
-  const contentWrap = document.createElement('div');
-  contentWrap.className = 'popup-content';
-  contentWrap.appendChild(titleEl);
-  contentWrap.appendChild(poetEl);
-  contentWrap.appendChild(imgEl);
-  contentWrap.appendChild(vidEl);
-  contentWrap.appendChild(ytEl);
-  contentWrap.appendChild(textEl);
-  contentWrap.appendChild(locEl);
-  el.appendChild(closeBtn);
-  el.appendChild(tabs);
-  el.appendChild(contentWrap);
-
-  // Show lens content in this popup
-  function showContent(data) {
-    titleEl.textContent = '';
-    if (data.url) {
-      const link = document.createElement('a');
-      link.href = data.url; link.target = '_blank'; link.rel = 'noopener';
-      link.textContent = data.title || '';
-      titleEl.appendChild(link);
-    } else {
-      titleEl.textContent = data.title || '';
-    }
-    poetEl.textContent = data.poet || '';
-    if (data.youtube) {
-      ytEl.src = data.youtube; ytEl.style.display = 'block';
-      vidEl.style.display = 'none'; vidEl.src = ''; imgEl.style.display = 'none';
-    } else if (data.video) {
-      vidEl.src = data.video; vidEl.load(); vidEl.play();
-      vidEl.style.display = 'block'; imgEl.style.display = 'none'; ytEl.style.display = 'none'; ytEl.src = '';
-    } else if (data.image) {
-      imgEl.src = data.image; imgEl.alt = data.title || '';
-      imgEl.style.display = 'block'; vidEl.style.display = 'none'; vidEl.src = ''; ytEl.style.display = 'none'; ytEl.src = '';
-    } else {
-      imgEl.style.display = 'none'; vidEl.style.display = 'none'; vidEl.src = ''; ytEl.style.display = 'none'; ytEl.src = '';
-    }
-    setHighlightedText(textEl, data.text, data.keyword);
-    while (locEl.firstChild) locEl.removeChild(locEl.firstChild);
-    const locPages = {
-      Q:2, QA:3, QC:5, QE:7, QH:8, QK:9, QL:10, QM:11,
-      P:2, PJ:12, PN:19, D:3, G:2, GB:5, L:2, LB:4, N:2, T:2, TA:3
-    };
-    if (data.loc) {
-      locEl.appendChild(document.createTextNode('Library of Congress: '));
-      const code = data.loc.split(' ')[0];
-      const letter = code.charAt(0).toLowerCase();
-      const subclass = code.replace(/[0-9.].*/,'');
-      const page = locPages[subclass] || 1;
-      const locLink = document.createElement('a');
-      locLink.href = 'https://www.loc.gov/aba/cataloging/classification/lcco/lcco_' + letter + '.pdf#page=' + page;
-      locLink.target = '_blank';
-      locLink.rel = 'noopener';
-      locLink.textContent = data.loc;
-      locLink.style.cssText = 'color:#c4a35a;text-decoration:none;';
-      locLink.addEventListener('mouseenter', () => { locLink.style.textDecoration = 'underline'; });
-      locLink.addEventListener('mouseleave', () => { locLink.style.textDecoration = 'none'; });
-      locLink.addEventListener('click', (e) => e.stopPropagation());
-      locEl.appendChild(locLink);
-    }
-  }
-
-  // Build tabs
-  const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education', math: 'Mathematics', engineering: 'Engineering', science: 'Science', history: 'History', fatima: 'Fatima', sally: 'Sally', paul: 'Paul', arman: 'Arman', roger: 'Roger', abbas: 'Abbas', tina: 'Tina', personalperspective: 'Personal', typography: 'Graphic Design & Typography', marketing: 'Marketing & Branding', arthistory: 'Art History', museumstudies: 'Museum Studies', ecology: 'Ecology', aesthetics: 'Aesthetics', hydrology: 'Hydrology', digitalimaging: 'Digital Imaging', calligraphy: 'Calligraphy', crisis: 'Crisis', memory: 'Memory', personal: 'Personal', anthropology: 'Anthropology', visualarts: 'Visual Arts', mathematics: 'Mathematics', architecture: 'Architecture' };
-  lenses.forEach((lensObj, i) => {
-    const tab = document.createElement('button');
-    tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
-    tab.textContent = lensDisplayNames[lensObj.lens] || lensObj.lens;
-    tab.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showContent(lenses[i]);
-      tabs.querySelectorAll('.lens-tab').forEach((t, j) => t.classList.toggle('active', j === i));
-    });
-    tabs.appendChild(tab);
-  });
-
-  // Show first lens
-  showContent(lenses[0]);
-
-  // Auto-size popup width to fit tabs
-  el.style.visibility = 'hidden';
-  el.style.width = '9999px';
-  document.body.appendChild(el);
-  const tabsNaturalWidth = tabs.scrollWidth;
-  el.remove();
-  el.style.visibility = '';
-  const pw = Math.max(320, Math.min(600, tabsNaturalWidth + 34));
-  el.style.width = pw + 'px';
-
-  // Position
-  let left = posX + 20, top = posY - 20;
-  if (left + pw > window.innerWidth - 10) left = posX - pw - 20;
-  if (top + 400 > window.innerHeight - 10) top = window.innerHeight - 410;
-  if (top < 10) top = 10;
-  el.style.left = left + 'px';
-  el.style.top = top + 'px';
-
-  // Close button
-  closeBtn.addEventListener('click', () => {
-    el.remove();
-    openPopups = openPopups.filter(p => p !== el);
-  });
-
-  // Click image to open lightbox
-  imgEl.addEventListener('click', () => {
-    if (!imgEl.src || imgEl.style.display === 'none') return;
-    lightboxVideo.style.display = 'none'; lightboxVideo.src = '';
-    lightboxImg.src = imgEl.src; lightboxImg.alt = imgEl.alt;
-    lightboxImg.style.display = 'block';
-    lightbox.style.display = 'flex';
-  });
-
-  // Click video to open lightbox
-  vidEl.addEventListener('click', () => {
-    if (!vidEl.src || vidEl.style.display === 'none') return;
-    lightboxImg.style.display = 'none';
-    lightboxVideo.src = vidEl.src;
-    lightboxVideo.currentTime = vidEl.currentTime;
-    lightboxVideo.style.display = 'block'; lightboxVideo.play();
-    lightbox.style.display = 'flex';
-  });
-
-  // Draggable from tab bar or any edge/padding area of the popup
-  let dragging = false, dragOffX = 0, dragOffY = 0;
-  function startDrag(clientX, clientY) {
-    dragging = true;
-    dragOffX = clientX - el.getBoundingClientRect().left;
-    dragOffY = clientY - el.getBoundingClientRect().top;
-    el.classList.add('dragging');
-  }
-  tabs.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('lens-tab')) return;
-    e.preventDefault(); startDrag(e.clientX, e.clientY);
-  });
-  el.addEventListener('mousedown', (e) => {
-    if (e.target === el) { e.preventDefault(); startDrag(e.clientX, e.clientY); }
-  });
-  document.addEventListener('mousemove', (e) => {
-    if (!dragging) return;
-    el.style.left = (e.clientX - dragOffX) + 'px';
-    el.style.top = (e.clientY - dragOffY) + 'px';
-  });
-  document.addEventListener('mouseup', () => {
-    if (dragging) { dragging = false; el.classList.remove('dragging'); }
-  });
-  // Touch support for dragging
-  tabs.addEventListener('touchstart', (e) => {
-    if (e.target.classList.contains('lens-tab')) return;
-    e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY);
-  }, { passive: false });
-  el.addEventListener('touchstart', (e) => {
-    if (e.target === el) { e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY); }
-  }, { passive: false });
-  document.addEventListener('touchmove', (e) => {
-    if (!dragging) return;
-    e.preventDefault(); const t = e.touches[0];
-    el.style.left = (t.clientX - dragOffX) + 'px';
-    el.style.top = (t.clientY - dragOffY) + 'px';
-  }, { passive: false });
-  document.addEventListener('touchend', () => {
-    if (dragging) { dragging = false; el.classList.remove('dragging'); }
-  });
-
-  // Resize handles on all four corners
-  ['nw','ne','sw','se'].forEach(corner => {
-    const handle = document.createElement('div');
-    handle.className = 'popup-resize ' + corner;
-    el.appendChild(handle);
-    let resizing = false, startX, startY, startW, startH, startL, startT;
-    function startResize(cx, cy) {
-      resizing = true;
-      el.style.maxHeight = 'none';
-      startX = cx; startY = cy;
-      const rect = el.getBoundingClientRect();
-      startW = rect.width; startH = rect.height;
-      startL = rect.left; startT = rect.top;
-    }
-    function doResize(cx, cy) {
-      if (!resizing) return;
-      const dx = cx - startX, dy = cy - startY;
-      if (corner.includes('e')) el.style.width = Math.max(280, startW + dx) + 'px';
-      if (corner.includes('w')) { el.style.width = Math.max(280, startW - dx) + 'px'; el.style.left = (startL + dx) + 'px'; }
-      if (corner.includes('s')) el.style.height = (startH + dy) + 'px';
-      if (corner.includes('n')) { el.style.height = (startH - dy) + 'px'; el.style.top = (startT + dy) + 'px'; }
-    }
-    handle.addEventListener('mousedown', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      startResize(e.clientX, e.clientY);
-      const onMove = (ev) => doResize(ev.clientX, ev.clientY);
-      const onUp = () => { resizing = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    });
-    handle.addEventListener('touchstart', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const t = e.touches[0]; startResize(t.clientX, t.clientY);
-      const onMove = (ev) => { ev.preventDefault(); const t2 = ev.touches[0]; doResize(t2.clientX, t2.clientY); };
-      const onUp = () => { resizing = false; document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); };
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onUp);
-    }, { passive: false });
-  });
-
-  viewerScreen.appendChild(el);
-  openPopups.push(el);
-  return el;
-}
 
 // --- Hover tooltip showing segment name ---
 artworkEl.addEventListener('mousemove', (e) => {
@@ -976,7 +532,7 @@ artworkEl.addEventListener('click', (e) => {
   const pixel = maskCtx.getImageData(maskX, maskY, 1, 1).data;
   const label = activeGetLabel(pixel[0], pixel[1], pixel[2]);
   if (label && activeLensData[label] && activeLensData[label].length > 0) {
-    createPopup(activeLensData[label], e.clientX, e.clientY);
+    createPopup(activeLensData[label], e.clientX, e.clientY, viewerScreen);
   }
 });
 
@@ -995,5 +551,6 @@ aboutOverlay.addEventListener('click', (e) => {
 // --- Initialize ---
 loadGalleries();
 </script>
+<script src="js/review.js"></script>
 </body>
 </html>
