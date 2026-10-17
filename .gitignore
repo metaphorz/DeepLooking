@@ -5,3 +5,8 @@ __pycache__/
 *.pyc
 .DS_Store
 outputs/generation.log
+
+# API keys: never commit
+.env
+.env.*
+*.key
