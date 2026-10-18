@@ -611,7 +611,10 @@ function tabForm(t, tab) {
     save(); renderEditor();
   });
   const imgbox = h('div', { className: 'imgbox' },
-    tab.image?.blob ? h('img', { src: blobURL(tab.image.blob), alt: '' }) : h('div', { className: 'noimg' }, 'No image'),
+    tab.image?.blob
+      ? h('img', { src: blobURL(tab.image.blob), alt: tab.title || '', title: 'Click to see it full size',
+                   onclick: e => showLightboxImage(e.currentTarget.src, e.currentTarget.alt) })
+      : h('div', { className: 'noimg' }, 'No image'),
     h('div', {},
       h('div', { className: 'btns' },
         h('button', { className: 'small', title: 'Lead image of the linked Wikipedia article (Wikimedia Commons)', onclick: () => run('Looking on Wikimedia', async () => {

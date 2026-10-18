@@ -84,6 +84,13 @@ lightbox.appendChild(lightboxImg);
 lightbox.appendChild(lightboxVideo);
 document.body.appendChild(lightbox);
 
+function showLightboxImage(src, alt = '') {
+  lightboxVideo.style.display = 'none'; lightboxVideo.src = '';
+  lightboxImg.src = src; lightboxImg.alt = alt;
+  lightboxImg.style.display = 'block';
+  lightbox.style.display = 'flex';
+}
+
 // --- Click or ESC to dismiss lightbox ---
 lightbox.addEventListener('click', () => {
   lightbox.style.display = 'none';
@@ -243,10 +250,7 @@ function createPopup(lenses, posX, posY, container = document.body) {
   // Click image to open lightbox
   imgEl.addEventListener('click', () => {
     if (!imgEl.src || imgEl.style.display === 'none') return;
-    lightboxVideo.style.display = 'none'; lightboxVideo.src = '';
-    lightboxImg.src = imgEl.src; lightboxImg.alt = imgEl.alt;
-    lightboxImg.style.display = 'block';
-    lightbox.style.display = 'flex';
+    showLightboxImage(imgEl.src, imgEl.alt);
   });
 
   // Click video to open lightbox
