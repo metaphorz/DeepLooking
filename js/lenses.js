@@ -191,12 +191,43 @@ async function attachWikipedia(tab, signal, withImage = true) {
 }
 
 // Only Commons images: English-Wikipedia-local files are often non-free (fair use).
+// A small original comes back unscaled, so a long animated GIF can be many MB; fitTabImage shrinks it.
 async function commonsImage(page, signal) {
   const src = page.thumbnail?.source;
   if (!src || !src.includes('/wikipedia/commons/')) return null;
   const blob = await (await fetch(src, { signal })).blob();
   const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/gif' ? 'gif' : blob.type === 'image/webp' ? 'webp' : 'jpg';
-  return { blob, ext, source: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(page.pageimage || '') };
+  return (await fitTabImage({ blob, ext, source: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(page.pageimage || '') })).image;
+}
+
+// ------------------------------------------------------------ size cap ---
+
+// Tab images over 2 MB slow the popup down for every visitor. Such an image is saved as a
+// still picture at most 1600 px on its long side (an animation keeps its first frame).
+// Returns {image, note}: note says what changed, or is '' when the image was small enough.
+const TAB_IMAGE_MAX_BYTES = 2e6, TAB_IMAGE_MAX_SIDE = 1600;
+async function fitTabImage(image) {
+  const big = image?.blob?.size;
+  if (!big || big <= TAB_IMAGE_MAX_BYTES) return { image, note: '' };
+  let c;
+  try { c = await canvasFromBlob(image.blob); } catch { return { image, note: '' }; }
+  const s = Math.min(1, TAB_IMAGE_MAX_SIDE / Math.max(c.width, c.height));
+  const out = document.createElement('canvas');
+  out.width = Math.round(c.width * s); out.height = Math.round(c.height * s);
+  const ctx = out.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(c, 0, 0, out.width, out.height);
+  // Keep PNG (sharp diagrams, transparency) when it fits; otherwise JPEG on white.
+  let blob = image.ext === 'jpg' ? null : await canvasBlob(out, 'image/png');
+  let ext = 'png';
+  if (!blob || blob.size > TAB_IMAGE_MAX_BYTES) {
+    ctx.globalCompositeOperation = 'destination-over';
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, out.width, out.height);
+    blob = await canvasBlob(out, 'image/jpeg', 0.88); ext = 'jpg';
+  }
+  const mb = n => n >= 1e6 ? (n / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1e3)) + ' kB';
+  const still = image.blob.type === 'image/gif' ? ' still picture (first frame of the animation)' : ' smaller picture';
+  return { image: { ...image, blob, ext }, note: `The image was ${mb(big)}, so it was saved as a ${mb(blob.size)}${still}.` };
 }
 
 async function findWikimediaImage(tab, signal) {
@@ -214,5 +245,5 @@ async function generateTabImage({ tab, model, level, signal }) {
   const { images } = await OpenRouter.chat({ model, signal, wantImage: true, content: [{ type: 'text', text: prompt }] });
   if (!images.length) throw new Error('The image model returned no image.');
   const blob = await (await fetch(images[images.length - 1])).blob();
-  return { blob, ext: blob.type === 'image/jpeg' ? 'jpg' : 'png', source: 'generated: ' + model };
+  return (await fitTabImage({ blob, ext: blob.type === 'image/jpeg' ? 'jpg' : 'png', source: 'generated: ' + model })).image;
 }

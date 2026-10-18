@@ -535,7 +535,7 @@ function popupDrop(getTabs) {
   return { onDropImage: async (j, dt) => {
     const tab = getTabs()[j];
     if (!tab) return null;
-    try { tab.image = await imageFromDrop(dt); }
+    try { tab.image = await imageFromDrop(dt, tab); }
     catch (e) { alert(e.message); return null; }
     tab.imageMode = 'self';
     S.sel.tab = j; save(); renderEditor();
@@ -544,9 +544,9 @@ function popupDrop(getTabs) {
 }
 
 // An image from a drag & drop: a file from the desktop, or an image dragged from a web page.
-async function imageFromDrop(dt) {
+async function imageFromDrop(dt, tab) {
   const f = [...(dt?.files || [])].find(f => f.type.startsWith('image/'));
-  if (f) return imageFromFile(f);
+  if (f) return imageFromFile(f, '', tab);
   if (dt?.files?.length) throw new Error('That does not look like an image file.');
   const html = dt?.getData('text/html') || '';
   const src = html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g, '&')
@@ -556,13 +556,18 @@ async function imageFromDrop(dt) {
   try { blob = await (await fetch(src)).blob(); } catch { blob = null; }
   if (!blob?.type.startsWith('image/')) throw new Error('That site will not let the page copy its image. Save the image to your computer, then drop the file here.');
   const name = decodeURIComponent(src.split(/[?#]/)[0].split('/').pop() || 'image');
-  return imageFromFile(new File([blob], name, { type: blob.type }), src.startsWith('http') ? src : '');
+  return imageFromFile(new File([blob], name, { type: blob.type }), src.startsWith('http') ? src : '', tab);
 }
 
-function imageFromFile(f, from = '') {
+// A size note for the tab is shown under its image the next time the editor draws it.
+const imageNote = { tab: null, text: '' };
+
+async function imageFromFile(f, from = '', tab = null) {
   if (!f.type.startsWith('image/')) throw new Error('That does not look like an image file.');
   const ext = (f.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
-  return { blob: f, ext, source: 'uploaded: ' + (from || f.name) };
+  const { image, note } = await fitTabImage({ blob: f, ext, source: 'uploaded: ' + (from || f.name) });
+  Object.assign(imageNote, { tab, text: note });
+  return image;
 }
 
 function selectTarget(t) { S.sel = { target: t, tab: 0 }; renderEditor(); }
@@ -641,8 +646,9 @@ function tabForm(t, tab) {
     catch (e) { imgStatus.className = 'status err'; imgStatus.textContent = e.message; }
   };
   const setMine = img => { tab.image = img; tab.imageMode = 'self'; };
+  if (imageNote.tab === tab && imageNote.text) { imgStatus.textContent = imageNote.text; imageNote.text = ''; }
   const upload = h('input', { type: 'file', accept: 'image/*', hidden: true });
-  upload.addEventListener('change', () => upload.files[0] && run('Adding image', async () => setMine(await imageFromFile(upload.files[0]))));
+  upload.addEventListener('change', () => upload.files[0] && run('Adding image', async () => setMine(await imageFromFile(upload.files[0], '', tab))));
   const findWikimedia = () => run('Looking on Wikimedia', async () => {
     const img = await findWikimediaImage(tab);
     if (!img) throw new Error('No freely licensed Wikimedia image for this article. Try Generate, or switch to "I\'ll add it".');
@@ -669,7 +675,7 @@ function tabForm(t, tab) {
   imgdrop.addEventListener('drop', e => {
     e.preventDefault(); imgdrop.classList.remove('over');
     const dt = e.dataTransfer;
-    run('Adding image', async () => setMine(await imageFromDrop(dt)));
+    run('Adding image', async () => setMine(await imageFromDrop(dt, tab)));
   });
   const imgbox = h('div', { className: 'imgbox' },
     h('div', { className: 'imgbar' }, h('span', { className: 'meta' }, 'Image'), modeToggle),
