@@ -620,7 +620,8 @@ function tabForm(t, tab) {
       if (key === 'text') { renderProblems(); renderChips(t); }
       save();
     });
-    return h('label', { className: 'field' + (opts.grow ? ' grow' : '') }, label, input);
+    return h('label', { className: 'field' + (opts.grow ? ' grow' : '') }, label, input,
+             opts.hint ? h('span', { className: 'hint' }, opts.hint) : null);
   };
   const nameInput = h('input', { type: 'text', value: tab.name });
   nameInput.addEventListener('change', () => {
@@ -720,7 +721,7 @@ function tabForm(t, tab) {
     h('div', { className: 'row' },
       field('Link (title opens it)', 'url', { ph: 'https://…' }),
       field('Byline', 'poet', { ph: tab.author === 'user' ? 'Defaults to your name' : 'Author, poet, artist…' })),
-    field('Text', 'text', { area: true }),
+    field('Text', 'text', { area: true, hint: 'Links: write [words](https://…), or paste a web address. Both open in a new tab.' }),
     h('div', { className: 'row' },
       field('Highlight word', 'keyword'),
       field('Library of Congress class', 'loc', { ph: 'e.g. QH540' })),

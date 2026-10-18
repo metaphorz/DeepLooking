@@ -42,17 +42,40 @@ function buildGetLabel(segments) {
 }
 
 // --- Highlight keyword in poem text using DOM (safe, no innerHTML) ---
+// Tab text: [words](https://…) and bare https://… addresses become links (http/https only);
+// the keyword is highlighted in the rest of the text.
+const LINK_RE = /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>"]+/g;
 function setHighlightedText(container, text, keyword) {
   container.textContent = '';
-  if (!keyword) {
-    container.textContent = text;
-    return;
+  text = text || '';
+  const kw = keyword ? new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi') : null;
+  let last = 0;
+  for (const m of text.matchAll(LINK_RE)) {
+    let href = m[2] || m[0], label = m[1] || '', end = m.index + m[0].length;
+    if (!m[2]) {
+      // Bare address: leave trailing punctuation, and an unmatched ')', in the sentence.
+      const trim = href.match(/[.,;:!?'"]+$|\)$/);
+      if (trim && !(trim[0] === ')' && href.includes('('))) { href = href.slice(0, -trim[0].length); end -= trim[0].length; }
+      label = href;
+    }
+    appendHighlighted(container, text.slice(last, m.index), kw);
+    const a = document.createElement('a');
+    a.href = href; a.target = '_blank'; a.rel = 'noopener';
+    a.className = 'text-link';
+    a.textContent = label;
+    a.addEventListener('click', e => e.stopPropagation());
+    container.appendChild(a);
+    last = end;
   }
-  const regex = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-  const parts = text.split(regex);
-  for (const part of parts) {
-    if (regex.test(part)) {
-      regex.lastIndex = 0;
+  appendHighlighted(container, text.slice(last), kw);
+}
+
+function appendHighlighted(container, text, kw) {
+  if (!text) return;
+  if (!kw) { container.appendChild(document.createTextNode(text)); return; }
+  text.split(kw).forEach((part, i) => {
+    if (!part) return;
+    if (i % 2) {  // split with one capture group puts matches at odd indexes
       const span = document.createElement('span');
       span.style.color = '#e8913a';
       span.style.fontWeight = '600';
@@ -61,7 +84,7 @@ function setHighlightedText(container, text, keyword) {
     } else {
       container.appendChild(document.createTextNode(part));
     }
-  }
+  });
 }
 // --- Open popups (closeAllPopups removes them, e.g. when leaving a viewer) ---
 let openPopups = [];

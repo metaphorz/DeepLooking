@@ -124,6 +124,15 @@
   border-radius: 6px;
   margin-bottom: 10px;
 }
+.popup .poem-text a.text-link {
+  color: #c4a35a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+.popup .poem-text a.text-link:hover {
+  color: #e0c27a;
+}
 .popup.drop-over {
   outline: 2px dashed #c4a35a;
   outline-offset: -6px;
