@@ -1,0 +1,171 @@
+{
+  "id": "pigeon_island_castle",
+  "title": "Pigeon Island Castle",
+  "credit": "Joy Kemp",
+  "image": "pigeon_island_castle.jpg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": [
+    "language",
+    "art",
+    "math",
+    "engineering",
+    "science",
+    "history"
+  ],
+  "segments": [
+    {
+      "label": "Sky",
+      "dir": "sky",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_lt": 100,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Water",
+      "dir": "water",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Boats",
+      "dir": "boats",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_lt": 100,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Piers",
+      "dir": "piers",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Castle Walls",
+      "dir": "castle_walls",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 150,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Trees above castle walls",
+      "dir": "trees_above_castle_walls",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_lt": 100,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Castle tower with flag",
+      "dir": "castle_tower_with_flag",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Yellow Marker/Light",
+      "dir": "yellow_marker_light",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_lt": 100,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Foreground object",
+      "dir": "foreground_object",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 100,
+        "g_lt": 150,
+        "b_lt": 100
+      }
+    }
+  ]
+}

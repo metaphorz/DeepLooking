@@ -330,7 +330,7 @@ async function loadGalleryImages(galleryId) {
   const galleryResp = await fetch(galleryPath + '/gallery.json' + cacheBust);
   const imageIds = await galleryResp.json();
 
-  gallerySubtitle.textContent = 'Select an image to explore';
+  gallerySubtitle.textContent = imageIds.length ? 'Select an image to explore' : 'No images in this gallery yet';
 
   for (const id of imageIds) {
     const basePath = galleryPath + '/' + id;
