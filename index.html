@@ -303,10 +303,21 @@ document.body.appendChild(tooltip);
 // --- Gallery list ---
 let galleriesList = [];
 
+// --- Shareable address: ?gallery=<id>&image=<id> opens that gallery (and image) directly ---
+function setAddress(galleryId, imageId) {
+  const q = new URLSearchParams(location.search);
+  q.set('gallery', galleryId);
+  if (imageId) q.set('image', imageId); else q.delete('image');
+  history.replaceState(null, '', location.pathname + '?' + q + location.hash);
+}
+
 async function loadGalleries() {
   const cacheBust = '?t=' + Date.now();
   const resp = await fetch('galleries.json' + cacheBust);
   galleriesList = await resp.json();
+  const q = new URLSearchParams(location.search);
+  const wanted = (q.get('gallery') || '').toLowerCase();
+  const start = galleriesList.find(g => g.id.toLowerCase() === wanted) || galleriesList[0];
 
   while (gallerySelect.firstChild) gallerySelect.removeChild(gallerySelect.firstChild);
   for (const g of galleriesList) {
@@ -315,15 +326,21 @@ async function loadGalleries() {
     opt.textContent = g.name + ' \u2014 ' + g.author;
     gallerySelect.appendChild(opt);
   }
-  await loadGalleryImages(galleriesList[0].id);
+  gallerySelect.value = start.id;
+  const items = await loadGalleryImages(start.id);
+  const open = items[(q.get('image') || '').toLowerCase()];
+  if (open) open(); else setAddress(start.id);
 }
 
 gallerySelect.addEventListener('change', () => {
+  setAddress(gallerySelect.value);
   loadGalleryImages(gallerySelect.value);
 });
 
 // --- Load gallery images from manifests ---
+// Returns {imageId (lowercase): open function} so an address can open an image directly.
 async function loadGalleryImages(galleryId) {
+  const openers = {};
   while (galleryGrid.firstChild) galleryGrid.removeChild(galleryGrid.firstChild);
   const galleryPath = 'galleries/' + galleryId;
   const cacheBust = '?t=' + Date.now();
@@ -359,9 +376,12 @@ async function loadGalleryImages(galleryId) {
       galleryLink.appendChild(a);
       div.appendChild(galleryLink);
     }
-    div.addEventListener('click', () => openViewer(manifest, basePath));
+    const open = () => { setAddress(galleryId, id); openViewer(manifest, basePath); };
+    openers[id.toLowerCase()] = open;
+    div.addEventListener('click', open);
     galleryGrid.appendChild(div);
   }
+  return openers;
 }
 
 // --- Open viewer for a given gallery item ---
@@ -492,6 +512,7 @@ backBtn.addEventListener('click', () => {
   // Remove all open popups and tooltip
   closeAllPopups();
   endReview();
+  setAddress(gallerySelect.value);
   imageLensBtn.style.display = 'none';
   if (document.querySelector('.segment-tooltip')) document.querySelector('.segment-tooltip').style.display = 'none';
 });
