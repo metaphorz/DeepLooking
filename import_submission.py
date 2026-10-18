@@ -191,6 +191,10 @@ def main():
     if dest.exists():
         shutil.rmtree(dest)
     m["id"] = image_id
+    # Gallery labels read "Title — Name", as in the existing galleries.
+    credit = (m.get("credit") or "").strip()
+    if credit and credit.lower() not in m["title"].lower():
+        m["title"] = f'{m["title"]} — {credit}'
     files["manifest.json"] = (json.dumps(m, indent=2, ensure_ascii=False) + "\n").encode()
     for rel, data in files.items():
         out = dest / rel
