@@ -521,14 +521,49 @@ $('pvImg').addEventListener('click', e => {
   const seg = S.seg?.segments[i];
   if (i < 0 || !seg) return;
   selectTarget(i);
-  if (seg.tabs.length) createPopup(popupLenses(seg.tabs), e.clientX, e.clientY);
+  if (seg.tabs.length) createPopup(popupLenses(seg.tabs), e.clientX, e.clientY, document.body, popupDrop(() => seg.tabs));
 });
 $('pvWhole').addEventListener('click', e => {
   e.stopPropagation();
   selectTarget('whole');
   const r = $('pvWhole').getBoundingClientRect();
-  if (S.wholeTabs.length) createPopup(popupLenses(S.wholeTabs), r.left - 310, r.bottom + 8);
+  if (S.wholeTabs.length) createPopup(popupLenses(S.wholeTabs), r.left - 310, r.bottom + 8, document.body, popupDrop(() => S.wholeTabs));
 });
+
+// Drop an image onto an open preview popup: it becomes that tab's own image.
+function popupDrop(getTabs) {
+  return { onDropImage: async (j, dt) => {
+    const tab = getTabs()[j];
+    if (!tab) return null;
+    try { tab.image = await imageFromDrop(dt); }
+    catch (e) { alert(e.message); return null; }
+    tab.imageMode = 'self';
+    S.sel.tab = j; save(); renderEditor();
+    return blobURL(tab.image.blob);
+  } };
+}
+
+// An image from a drag & drop: a file from the desktop, or an image dragged from a web page.
+async function imageFromDrop(dt) {
+  const f = [...(dt?.files || [])].find(f => f.type.startsWith('image/'));
+  if (f) return imageFromFile(f);
+  if (dt?.files?.length) throw new Error('That does not look like an image file.');
+  const html = dt?.getData('text/html') || '';
+  const src = html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g, '&')
+           || (dt?.getData('text/uri-list') || '').split('\n').find(l => l && !l.startsWith('#'))?.trim();
+  if (!src) throw new Error('Drop an image file, or an image dragged from a web page.');
+  let blob;
+  try { blob = await (await fetch(src)).blob(); } catch { blob = null; }
+  if (!blob?.type.startsWith('image/')) throw new Error('That site will not let the page copy its image. Save the image to your computer, then drop the file here.');
+  const name = decodeURIComponent(src.split(/[?#]/)[0].split('/').pop() || 'image');
+  return imageFromFile(new File([blob], name, { type: blob.type }), src.startsWith('http') ? src : '');
+}
+
+function imageFromFile(f, from = '') {
+  if (!f.type.startsWith('image/')) throw new Error('That does not look like an image file.');
+  const ext = (f.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+  return { blob: f, ext, source: 'uploaded: ' + (from || f.name) };
+}
 
 function selectTarget(t) { S.sel = { target: t, tab: 0 }; renderEditor(); }
 function currentTarget() {
@@ -595,41 +630,60 @@ function tabForm(t, tab) {
   });
   const who = { ai: 'Written by AI', user: 'Written by you', 'ai+user': 'AI draft, edited by you' }[tab.author] || '';
 
-  // Image
+  // Image: 'ai' finds (Wikimedia) or generates it; 'self' means you upload or drop your own.
+  const mode = tabImageMode(tab);
   const imgStatus = h('div', { className: 'status' });
   const run = async (label, fn) => {
-    const stop = (() => { imgStatus.replaceChildren(h('span', { className: 'spinner' }), label + '…'); return () => {}; })();
-    try { await fn(); stop(); save(); renderEditor(); }
+    imgStatus.className = 'status';
+    imgStatus.replaceChildren(h('span', { className: 'spinner' }), label + '…');
+    try { await fn(); save(); renderEditor(); }
     catch (e) { imgStatus.className = 'status err'; imgStatus.textContent = e.message; }
   };
+  const setMine = img => { tab.image = img; tab.imageMode = 'self'; };
   const upload = h('input', { type: 'file', accept: 'image/*', hidden: true });
-  upload.addEventListener('change', () => {
-    const f = upload.files[0];
-    if (!f) return;
-    const ext = (f.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-    tab.image = { blob: f, ext, source: 'uploaded: ' + f.name };
-    save(); renderEditor();
+  upload.addEventListener('change', () => upload.files[0] && run('Adding image', async () => setMine(await imageFromFile(upload.files[0]))));
+  const findWikimedia = () => run('Looking on Wikimedia', async () => {
+    const img = await findWikimediaImage(tab);
+    if (!img) throw new Error('No freely licensed Wikimedia image for this article. Try Generate, or switch to "I\'ll add it".');
+    tab.image = img;
+  });
+  const modeToggle = h('div', { className: 'imgmode', role: 'group', 'aria-label': 'Who supplies the image' },
+    ...[['ai', 'AI fills it'], ['self', "I'll add it"]].map(([m, label]) => h('button', {
+      className: 'small' + (mode === m ? ' on' : ''), 'aria-pressed': String(mode === m),
+      onclick: () => {
+        if (mode === m) return;
+        tab.imageMode = m; save();
+        // Switching to AI with no image: fetch the article's Wikimedia image right away (no key needed).
+        if (m === 'ai' && !tab.image && tab.wikipedia) findWikimedia(); else renderEditor();
+      },
+    }, label)));
+  const preview = tab.image?.blob
+    ? h('img', { src: blobURL(tab.image.blob), alt: tab.title || '', title: 'Click to see it full size',
+                 onclick: e => { e.stopPropagation(); showLightboxImage(e.currentTarget.src, e.currentTarget.alt); } })
+    : h('div', { className: 'noimg' }, mode === 'self' ? 'Drop an image here, or click to choose one' : 'No image yet');
+  const imgdrop = h('div', { className: 'imgdrop' + (mode === 'self' && !tab.image ? ' empty' : ''),
+                             onclick: () => mode === 'self' && !tab.image && upload.click() }, preview);
+  ['dragenter', 'dragover'].forEach(ev => imgdrop.addEventListener(ev, e => { e.preventDefault(); imgdrop.classList.add('over'); }));
+  imgdrop.addEventListener('dragleave', () => imgdrop.classList.remove('over'));
+  imgdrop.addEventListener('drop', e => {
+    e.preventDefault(); imgdrop.classList.remove('over');
+    const dt = e.dataTransfer;
+    run('Adding image', async () => setMine(await imageFromDrop(dt)));
   });
   const imgbox = h('div', { className: 'imgbox' },
-    tab.image?.blob
-      ? h('img', { src: blobURL(tab.image.blob), alt: tab.title || '', title: 'Click to see it full size',
-                   onclick: e => showLightboxImage(e.currentTarget.src, e.currentTarget.alt) })
-      : h('div', { className: 'noimg' }, 'No image'),
-    h('div', {},
-      h('div', { className: 'btns' },
-        h('button', { className: 'small', title: 'Lead image of the linked Wikipedia article (Wikimedia Commons)', onclick: () => run('Looking on Wikimedia', async () => {
-          const img = await findWikimediaImage(tab);
-          if (!img) throw new Error('No freely licensed Wikimedia image for this article. Try Generate or Upload.');
-          tab.image = img;
-        }) }, 'Wikimedia'),
+    h('div', { className: 'imgbar' }, h('span', { className: 'meta' }, 'Image'), modeToggle),
+    imgdrop,
+    h('div', { className: 'btns' },
+      mode === 'ai' ? [
+        h('button', { className: 'small', title: 'Lead image of the linked Wikipedia article (Wikimedia Commons)', onclick: findWikimedia }, 'Wikimedia'),
         h('button', { className: 'small', onclick: () => ensureKey() && run('Generating image', async () => {
           tab.image = await generateTabImage({ tab, model: S.models.image, level: S.profile.level });
         }) }, 'Generate'),
-        h('button', { className: 'small', onclick: () => upload.click() }, 'Upload'),
-        tab.image ? h('button', { className: 'small', onclick: () => { tab.image = null; save(); renderEditor(); } }, 'Remove') : null,
-        upload),
-      tab.image?.source ? h('div', { className: 'src' }, tab.image.source) : null,
-      imgStatus));
+      ] : h('button', { className: 'small', onclick: () => upload.click() }, tab.image ? 'Replace' : 'Upload'),
+      tab.image ? h('button', { className: 'small', onclick: () => { tab.image = null; save(); renderEditor(); } }, 'Remove') : null,
+      upload),
+    tab.image?.source ? h('div', { className: 'src' }, tab.image.source) : null,
+    imgStatus);
 
   // Revise
   const instr = h('input', { type: 'text', placeholder: tab.text ? 'Ask for a change, e.g. "focus on tidal flow"' : 'Optional: what should this tab be about?' });
@@ -659,13 +713,13 @@ function tabForm(t, tab) {
 
   return h('div', {},
     h('div', { className: 'who' }, `${t.label} · ${tab.name} · ${who}`),
+    imgbox,
     h('div', { className: 'row' },
       h('label', { className: 'field' }, 'Tab name', nameInput),
       field('Title', 'title')),
     h('div', { className: 'row' },
       field('Link (title opens it)', 'url', { ph: 'https://…' }),
       field('Byline', 'poet', { ph: tab.author === 'user' ? 'Defaults to your name' : 'Author, poet, artist…' })),
-    imgbox,
     field('Text', 'text', { area: true }),
     h('div', { className: 'row' },
       field('Highlight word', 'keyword'),

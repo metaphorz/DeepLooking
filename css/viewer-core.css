@@ -124,6 +124,10 @@
   border-radius: 6px;
   margin-bottom: 10px;
 }
+.popup.drop-over {
+  outline: 2px dashed #c4a35a;
+  outline-offset: -6px;
+}
 .image-lightbox {
   position: fixed;
   top: 0; left: 0;

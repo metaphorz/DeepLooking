@@ -106,7 +106,8 @@ document.addEventListener('keydown', (e) => {
 // --- Create a new popup for given lenses at position, appended to container ---
 // Each lens: {lens, name?, title, poet, url, image, video, youtube, keyword, text, loc}.
 // name (the markdown "tab:" field) overrides the tab label.
-function createPopup(lenses, posX, posY, container = document.body) {
+// opts.onDropImage(i, dataTransfer) -> Promise<url>: lets an image be dropped onto tab i (staging page).
+function createPopup(lenses, posX, posY, container = document.body, opts = {}) {
   const el = document.createElement('div');
   el.className = 'popup visible pinned';
   el.style.position = 'fixed';
@@ -146,11 +147,11 @@ function createPopup(lenses, posX, posY, container = document.body) {
 
   const contentWrap = document.createElement('div');
   contentWrap.className = 'popup-content';
-  contentWrap.appendChild(titleEl);
-  contentWrap.appendChild(poetEl);
   contentWrap.appendChild(imgEl);
   contentWrap.appendChild(vidEl);
   contentWrap.appendChild(ytEl);
+  contentWrap.appendChild(titleEl);
+  contentWrap.appendChild(poetEl);
   contentWrap.appendChild(textEl);
   contentWrap.appendChild(locEl);
   el.appendChild(closeBtn);
@@ -208,12 +209,14 @@ function createPopup(lenses, posX, posY, container = document.body) {
 
   // Build tabs
   const lensDisplayNames = { cs: 'Comp Sci', language: 'Language', geology: 'Geology', matsci: 'Material Sci', botany: 'Botany', cinematography: 'Cinema', modeling: 'Modeling', art: 'Art', ancienthistory: 'Ancient History', education: 'Education', math: 'Mathematics', engineering: 'Engineering', science: 'Science', history: 'History', fatima: 'Fatima', sally: 'Sally', paul: 'Paul', arman: 'Arman', roger: 'Roger', abbas: 'Abbas', tina: 'Tina', personalperspective: 'Personal', typography: 'Graphic Design & Typography', marketing: 'Marketing & Branding', arthistory: 'Art History', museumstudies: 'Museum Studies', ecology: 'Ecology', aesthetics: 'Aesthetics', hydrology: 'Hydrology', digitalimaging: 'Digital Imaging', calligraphy: 'Calligraphy', crisis: 'Crisis', memory: 'Memory', personal: 'Personal', anthropology: 'Anthropology', visualarts: 'Visual Arts', mathematics: 'Mathematics', architecture: 'Architecture' };
+  let activeTab = 0;
   lenses.forEach((lensObj, i) => {
     const tab = document.createElement('button');
     tab.className = 'lens-tab' + (i === 0 ? ' active' : '');
     tab.textContent = lensObj.name || lensDisplayNames[lensObj.lens] || lensObj.lens;
     tab.addEventListener('click', (e) => {
       e.stopPropagation();
+      activeTab = i;
       showContent(lenses[i]);
       tabs.querySelectorAll('.lens-tab').forEach((t, j) => t.classList.toggle('active', j === i));
     });
@@ -222,6 +225,21 @@ function createPopup(lenses, posX, posY, container = document.body) {
 
   // Show first lens
   showContent(lenses[0]);
+
+  // Drop an image onto the open tab
+  if (opts.onDropImage) {
+    ['dragenter', 'dragover'].forEach(t => el.addEventListener(t, e => { e.preventDefault(); el.classList.add('drop-over'); }));
+    el.addEventListener('dragleave', e => { if (!el.contains(e.relatedTarget)) el.classList.remove('drop-over'); });
+    el.addEventListener('drop', async e => {
+      e.preventDefault();
+      el.classList.remove('drop-over');
+      const i = activeTab;
+      const url = await opts.onDropImage(i, e.dataTransfer);
+      if (!url) return;
+      lenses[i] = { ...lenses[i], image: url, video: '', youtube: '' };
+      if (activeTab === i) showContent(lenses[i]);
+    });
+  }
 
   // Auto-size popup width to fit tabs
   el.style.visibility = 'hidden';

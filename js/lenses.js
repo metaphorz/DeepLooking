@@ -1,6 +1,7 @@
 // Lens profiles and tab generation for the staging page.
 // A tab: {lens (dir slug), name (tab label), title, poet, url, keyword, loc, text,
-//         author: 'ai' | 'user' | 'ai+user', wikipedia, image: {blob, ext, source} | null}
+//         author: 'ai' | 'user' | 'ai+user', wikipedia, image: {blob, ext, source} | null,
+//         imageMode: 'ai' (found or generated for you) | 'self' (you upload or drop it)}
 
 const TEXT_MODELS = [
   ['anthropic/claude-sonnet-5.5', 'Claude Sonnet 5.5'],
@@ -52,7 +53,12 @@ function titleCase(s) { return s.replace(/\b\w/g, c => c.toUpperCase()); }
 
 function blankTab(l) {
   return { lens: l.lens, name: l.name, title: l.author === 'user' ? l.name : '', poet: '', url: '', keyword: '',
-           loc: '', text: '', author: l.author, wikipedia: '', image: null };
+           loc: '', text: '', author: l.author, wikipedia: '', image: null, imageMode: l.author === 'user' ? 'self' : 'ai' };
+}
+
+// Tabs saved before imageMode existed: your own lenses and uploaded images count as 'self'.
+function tabImageMode(tab) {
+  return tab.imageMode || (tab.author === 'user' || tab.image?.source?.startsWith('uploaded') ? 'self' : 'ai');
 }
 
 const TAB_SCHEMA = {
@@ -141,11 +147,12 @@ async function reviseTab({ target, tab, about, level, model, focusURL, instructi
   });
   const g = parseTabsJSON(text)[0];
   if (!g) throw new Error('The model returned no tab.');
-  const out = { ...tab, ...cleanGenerated(g), author: 'ai' };
+  const out = { ...tab, ...cleanGenerated(g), author: 'ai', imageMode: tabImageMode(tab) };
   if (out.wikipedia !== tab.wikipedia || !out.image) {
     out.url = '';
-    if (!tab.image || tab.image.source?.includes('wikimedia')) out.image = null;
-    await attachWikipedia(out, signal).catch(() => {});
+    // A Wikimedia image follows the article; an image the person added stays put.
+    if (out.imageMode === 'ai' && (!tab.image || tab.image.source?.includes('wikimedia'))) out.image = null;
+    await attachWikipedia(out, signal, out.imageMode === 'ai').catch(() => {});
   }
   return out;
 }
@@ -170,8 +177,8 @@ async function wikiPage(params, signal) {
 }
 
 // Resolve tab.wikipedia to a real article: set tab.url (the title link) and, unless the tab
-// already has an image, a freely licensed lead image from Wikimedia Commons.
-async function attachWikipedia(tab, signal) {
+// already has an image (or withImage is false), a freely licensed lead image from Wikimedia Commons.
+async function attachWikipedia(tab, signal, withImage = true) {
   const props = { prop: 'pageimages|info', inprop: 'url', piprop: 'thumbnail|name', pithumbsize: '800' };
   let page = await wikiPage({ titles: tab.wikipedia, ...props }, signal);
   if (!page || 'missing' in page || 'invalid' in page) {
@@ -180,7 +187,7 @@ async function attachWikipedia(tab, signal) {
   if (!page || 'missing' in page || !page.fullurl) return;
   tab.wikipedia = page.title;
   tab.url = page.fullurl;
-  if (!tab.image) tab.image = await commonsImage(page, signal);
+  if (withImage && !tab.image) tab.image = await commonsImage(page, signal);
 }
 
 // Only Commons images: English-Wikipedia-local files are often non-free (fair use).
