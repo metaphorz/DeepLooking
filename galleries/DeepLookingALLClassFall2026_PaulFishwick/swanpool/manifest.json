@@ -1,7 +1,7 @@
 {
   "id": "swanpool",
-  "title": "Swanpool, Falmouth — Pamela",
-  "credit": "Pamela",
+  "title": "Swanpool, Falmouth — Pamela Gray",
+  "credit": "Pamela Gray",
   "image": "swanpool.jpg",
   "mask": "segmentation_mask.png",
   "imageLenses": [

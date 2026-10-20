@@ -2,7 +2,7 @@
   "tool": "Claude Code (curator import)",
   "format": 1,
   "created": "2026-10-20T20:16:14Z",
-  "contributor": "Pamela",
+  "contributor": "Pamela Gray",
   "notes": "Image, segmentation mask and segment names from the contributor; tab text written by Claude Code, tab images from Wikimedia Commons.",
   "profile": {
     "kind": "lamesh",

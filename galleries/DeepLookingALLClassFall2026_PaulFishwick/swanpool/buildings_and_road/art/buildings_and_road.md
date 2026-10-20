@@ -7,4 +7,4 @@ imagesource: https://commons.wikimedia.org/wiki/File:A_view_of_the_Roman_Campagn
 keyword: picturesque
 loc: N7430
 
-In the 1700s, travelers and artists in Britain began to admire the picturesque, scenery that looks as if it belongs in a painting. Writers such as William Gilpin taught tourists to look for rough cliffs, winding paths, trees and a cottage or ruin placed just right to catch the eye. In Pamela's photo, the small white buildings among the dark trees work exactly that way. They are tiny, but their brightness draws the eye and gives the landscape a human scale. Try covering them with your finger and see how the picture changes.
+In the 1700s, travelers and artists in Britain began to admire the picturesque, scenery that looks as if it belongs in a painting. Writers such as William Gilpin taught tourists to look for rough cliffs, winding paths, trees and a cottage or ruin placed just right to catch the eye. In Pamela Gray's photo, the small white buildings among the dark trees work exactly that way. They are tiny, but their brightness draws the eye and gives the landscape a human scale. Try covering them with your finger and see how the picture changes.
