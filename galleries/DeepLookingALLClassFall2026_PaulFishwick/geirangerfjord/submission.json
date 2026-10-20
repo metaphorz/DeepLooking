@@ -1,0 +1,62 @@
+{
+  "tool": "Claude Code (curator import)",
+  "format": 1,
+  "created": "2026-10-20T20:15:39Z",
+  "contributor": "Lou Ann",
+  "notes": "Image, segmentation mask and segment names from the contributor; tab text written by Claude Code, tab images from Wikimedia Commons.",
+  "profile": {
+    "kind": "lamesh",
+    "name": "LA MESH",
+    "lenses": [
+      "Language",
+      "Art",
+      "Mathematics",
+      "Engineering",
+      "Science",
+      "History"
+    ]
+  },
+  "about": "Geirangerfjord, Norway, seen from high above the head of the fjord, with cruise ships in the water and the road winding up the valley.",
+  "level": "9th or 10th grade",
+  "models": {
+    "text": "anthropic/claude-opus-5.5"
+  },
+  "authorship": {
+    "sky/language": "ai",
+    "sky/art": "ai",
+    "sky/math": "ai",
+    "sky/engineering": "ai",
+    "sky/science": "ai",
+    "sky/history": "ai",
+    "snowy_mountains/language": "ai",
+    "snowy_mountains/art": "ai",
+    "snowy_mountains/math": "ai",
+    "snowy_mountains/engineering": "ai",
+    "snowy_mountains/science": "ai",
+    "snowy_mountains/history": "ai",
+    "valley_lower_mountains/language": "ai",
+    "valley_lower_mountains/art": "ai",
+    "valley_lower_mountains/math": "ai",
+    "valley_lower_mountains/engineering": "ai",
+    "valley_lower_mountains/science": "ai",
+    "valley_lower_mountains/history": "ai",
+    "water_fjord/language": "ai",
+    "water_fjord/art": "ai",
+    "water_fjord/math": "ai",
+    "water_fjord/engineering": "ai",
+    "water_fjord/science": "ai",
+    "water_fjord/history": "ai",
+    "ships_boats/language": "ai",
+    "ships_boats/art": "ai",
+    "ships_boats/math": "ai",
+    "ships_boats/engineering": "ai",
+    "ships_boats/science": "ai",
+    "ships_boats/history": "ai",
+    "wholeimage/language": "ai",
+    "wholeimage/art": "ai",
+    "wholeimage/math": "ai",
+    "wholeimage/engineering": "ai",
+    "wholeimage/science": "ai",
+    "wholeimage/history": "ai"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "id": "geirangerfjord",
+  "title": "Geirangerfjord — Lou Ann",
+  "credit": "Lou Ann",
+  "image": "geirangerfjord.jpg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": [
+    "language",
+    "art",
+    "math",
+    "engineering",
+    "science",
+    "history"
+  ],
+  "segments": [
+    {
+      "label": "Sky",
+      "dir": "sky",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_lt": 100,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Snowy Mountains",
+      "dir": "snowy_mountains",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Valley/Lower Mountains",
+      "dir": "valley_lower_mountains",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Water/Fjord",
+      "dir": "water_fjord",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Ships/Boats",
+      "dir": "ships_boats",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_lt": 100,
+        "b_lt": 100
+      }
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "id": "swanpool",
+  "title": "Swanpool, Falmouth — Pamela",
+  "credit": "Pamela",
+  "image": "swanpool.jpg",
+  "mask": "segmentation_mask.png",
+  "imageLenses": [
+    "language",
+    "art",
+    "math",
+    "engineering",
+    "science",
+    "history"
+  ],
+  "segments": [
+    {
+      "label": "Sky",
+      "dir": "sky",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_lt": 100,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Water",
+      "dir": "water",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Foreground Grass",
+      "dir": "foreground_grass",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_lt": 100,
+        "g_gt": 150,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Background Fields",
+      "dir": "background_fields",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 150,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Trees and Bushes",
+      "dir": "trees_and_bushes",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_lt": 100,
+        "b_gt": 150
+      }
+    },
+    {
+      "label": "Cliff and Shore",
+      "dir": "cliff_and_shore",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_lt": 100,
+        "b_lt": 100
+      }
+    },
+    {
+      "label": "Buildings and Road",
+      "dir": "buildings_and_road",
+      "lenses": [
+        "language",
+        "art",
+        "math",
+        "engineering",
+        "science",
+        "history"
+      ],
+      "colorRule": {
+        "r_gt": 150,
+        "g_gt": 150,
+        "b_gt": 150
+      }
+    }
+  ]
+}
